@@ -19,9 +19,10 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "sqlite+aiosqlite:///./cortexai.db"
 
-    # LLM (Groq — free tier)
-    groq_api_key: str = ""
-    llm_model: str = "llama-3.3-70b-versatile"
+    # LLM Settings
+    groq_api_key: str | None = None
+    huggingface_api_key: str | None = None
+    llm_model: str = "llama-3.1-8b-instant"
     llm_temperature: float = 0.3
     llm_max_tokens: int = 1024
 

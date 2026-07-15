@@ -6,7 +6,7 @@ Provides a unified interface for embedding text documents and queries.
 
 import logging
 from functools import lru_cache
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 _embeddings_instance = None
 
 
-def get_embeddings() -> HuggingFaceEmbeddings:
+def get_embeddings() -> HuggingFaceEndpointEmbeddings:
     """
     Get or create the embeddings model instance.
     Uses sentence-transformers/all-MiniLM-L6-v2 by default:
@@ -29,15 +29,11 @@ def get_embeddings() -> HuggingFaceEmbeddings:
         settings = get_settings()
         logger.info(f"Loading embedding model: {settings.embedding_model}")
 
-        _embeddings_instance = HuggingFaceEmbeddings(
-            model_name=settings.embedding_model,
-            model_kwargs={"device": "cpu"},
-            encode_kwargs={
-                "normalize_embeddings": True,  # L2 normalization for cosine similarity
-                "batch_size": 32,
-            },
+        _embeddings_instance = HuggingFaceEndpointEmbeddings(
+            model=settings.embedding_model,
+            huggingfacehub_api_token=settings.huggingface_api_key,
         )
-        logger.info("Embedding model loaded successfully")
+        logger.info("Embedding model loaded successfully from Hugging Face API")
 
     return _embeddings_instance
 
