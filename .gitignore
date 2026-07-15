@@ -1,0 +1,11 @@
+node_modules/
+venv/
+.venv_libs/
+__pycache__/
+*.pyc
+.env
+cortexai.db
+chroma_db/
+.DS_Store
+dist/
+build/

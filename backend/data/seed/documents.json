@@ -1,0 +1,92 @@
+[
+  {
+    "id": "b2b-001",
+    "title": "EduSmart Interactive Display Pro 75\"",
+    "content": "The EduSmart Interactive Display Pro 75-inch is the ultimate smart classroom hub. It features a 4K UHD anti-glare screen, built-in Android OS, and interactive whiteboard software with 20-point multi-touch. It includes lesson planning templates, digital geometry tools, and seamless wireless casting from any teacher or student device. Designed for Indian and GCC school climates with dust-resistant casing. Comes with a 3-year onsite warranty.",
+    "category": "Smart Infrastructure",
+    "price_usd": 1800,
+    "target_level": "K-12",
+    "image_url": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&h=400&fit=crop"
+  },
+  {
+    "id": "b2b-002",
+    "title": "Schoolmart STEM Robotics Lab - Standard Setup",
+    "content": "A comprehensive STEM Robotics lab setup for middle and high schools. The package includes 15 programmable robot kits (Arduino & Raspberry Pi based), 5 soldering stations, a suite of mechanical toolkits, and a structured 40-week curriculum aligned with NEP 2020 guidelines for AI and coding education. Includes 3 days of teacher training and certification.",
+    "category": "STEM Labs",
+    "price_usd": 4500,
+    "target_level": "Middle/High School",
+    "image_url": "https://images.unsplash.com/photo-1561557944-6e7860d1a7eb?w=600&h=400&fit=crop"
+  },
+  {
+    "id": "b2b-003",
+    "title": "EduSphere Comprehensive ERP SaaS",
+    "content": "EduSphere ERP is a cloud-based school management system tailored for schools and university groups. Modules include student admission, fee management with payment gateways, attendance tracking via RFID/Biometrics, GPS school bus tracking, and an integrated parent-teacher communication app. Data is secured on AWS with full compliance to GCC data privacy laws. Pricing is annual per campus.",
+    "category": "Software & ERP",
+    "price_usd": 1200,
+    "target_level": "All Levels",
+    "image_url": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop"
+  },
+  {
+    "id": "b2b-004",
+    "title": "AR Biology & Anatomy Virtual Lab",
+    "content": "An augmented reality (AR) software suite for high school biology. It includes 3D simulations of human anatomy, cellular structures, and plant biology. Students can use AR glasses or tablets to dissect virtual frogs and explore the human heart in 3D. The software is curriculum-aligned for CBSE, ICSE, and international boards, drastically reducing the need for physical biology lab specimens.",
+    "category": "Digital Content",
+    "price_usd": 850,
+    "target_level": "High School",
+    "image_url": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=400&fit=crop"
+  },
+  {
+    "id": "b2b-005",
+    "title": "Advanced 3D Printing Lab Station",
+    "content": "A turnkey 3D printing solution for school Maker Spaces. Includes two industrial-grade enclosed FDM 3D printers, 20 spools of PLA filament, 3D modeling software licenses for 50 students, and an online course on Design Thinking. The setup allows students to rapid-prototype engineering projects and architectural models safely.",
+    "category": "STEM Labs",
+    "price_usd": 2800,
+    "target_level": "High School / University",
+    "image_url": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=400&fit=crop"
+  },
+  {
+    "id": "b2b-006",
+    "title": "Language Lab & Phonics Software Suite",
+    "content": "A digital language laboratory setup focused on English proficiency, phonics, and communication skills. Includes 30 noise-cancelling headsets, a teacher control console, and AI-driven speech recognition software that grades student pronunciation in real-time. Extremely popular in GCC and SADC regions for ESL (English as a Second Language) programs.",
+    "category": "Digital Content",
+    "price_usd": 3200,
+    "target_level": "Primary/Middle School",
+    "image_url": "https://images.unsplash.com/photo-1516534775068-ba3e7458af70?w=600&h=400&fit=crop"
+  },
+  {
+    "id": "b2b-007",
+    "title": "Smart Library Management System Kiosk",
+    "content": "A self-service kiosk for modern school libraries. It integrates an RFID scanner, barcode reader, and touch screen interface allowing students to borrow and return books autonomously. The backend software tracks inventory, identifies lost books, and generates reading habit analytics for administrators.",
+    "category": "Smart Infrastructure",
+    "price_usd": 1500,
+    "target_level": "All Levels",
+    "image_url": "https://images.unsplash.com/photo-1555661530-68c8e98db4e6?w=600&h=400&fit=crop"
+  },
+  {
+    "id": "b2b-008",
+    "title": "Virtual Reality (VR) Physics Simulator",
+    "content": "A VR-based physics simulator where students can conduct hazardous or impossible experiments in a safe virtual environment. From testing gravity on different planets to observing nuclear chain reactions. The package includes 5 standalone VR headsets, a charging cart, and lifetime access to the physics module library.",
+    "category": "Digital Content",
+    "price_usd": 4000,
+    "target_level": "High School / University",
+    "image_url": "https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?w=600&h=400&fit=crop"
+  },
+  {
+    "id": "b2b-009",
+    "title": "AI & Data Science Curriculum Bundle",
+    "content": "A ready-to-deploy curriculum bundle for schools wanting to introduce AI and Data Science. It includes teacher manuals, student workbooks, pre-configured Jupyter Notebook cloud environments, and project-based learning modules (e.g., training a simple self-driving car model). Designed to meet the AI integration mandates of NEP 2020.",
+    "category": "Software & ERP",
+    "price_usd": 900,
+    "target_level": "High School",
+    "image_url": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&h=400&fit=crop"
+  },
+  {
+    "id": "b2b-010",
+    "title": "Modular Ergonomic Classroom Furniture Set",
+    "content": "A set of 30 ergonomic, modular student desks and chairs designed for collaborative learning. The desks feature writable whiteboard surfaces, locking casters for quick room reconfiguration, and built-in storage. Manufactured with high-durability, eco-friendly materials to withstand heavy daily use in active classrooms.",
+    "category": "Smart Infrastructure",
+    "price_usd": 5500,
+    "target_level": "Middle/High School",
+    "image_url": "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&h=400&fit=crop"
+  }
+]
