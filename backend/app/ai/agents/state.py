@@ -1,5 +1,5 @@
 """
-CortexAI — Agent State Definition
+AuraAI — Agent State Definition
 TypedDict that defines the shared state flowing through the LangGraph agent graph.
 Every node reads from and writes to this state.
 """

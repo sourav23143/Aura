@@ -1,3 +1,4 @@
+import { CONFIG } from '../config';
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { IconChart } from '../components/Icons';
@@ -51,7 +52,7 @@ export default function Monitor() {
         <div className="card mb-lg" style={{ borderColor: 'var(--accent-tertiary)' }}>
           <p style={{ color: 'var(--accent-tertiary)' }}>⚠️ {error}</p>
           <p className="text-muted mt-md" style={{ fontSize: 'var(--font-size-sm)' }}>
-            Make sure the backend is running at http://localhost:8000
+            Make sure the backend is running at CONFIG.API_URL
           </p>
         </div>
       )}

@@ -35,3 +35,12 @@ passlib[bcrypt]>=1.7.4
 # Utilities
 httpx>=0.28.1
 structlog>=24.4.0
+
+# Database Production Drivers (Supabase PostgreSQL / pgvector)
+psycopg>=3.1.18
+psycopg-binary>=3.1.18
+pgvector>=0.2.4
+asyncpg>=0.29.0
+
+# Production WSGI/ASGI Server
+gunicorn>=21.2.0

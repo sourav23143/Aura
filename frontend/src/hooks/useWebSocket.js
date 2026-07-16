@@ -1,3 +1,4 @@
+import { CONFIG } from '../config';
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 /**
@@ -14,7 +15,7 @@ export function useWebSocket(sessionId) {
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
-    const ws = new WebSocket(`ws://localhost:8000/api/chat/ws/${sessionId}`);
+    const ws = new WebSocket(CONFIG.WS_URL(sessionId));
 
     ws.onopen = () => {
       setIsConnected(true);

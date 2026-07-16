@@ -1,5 +1,5 @@
 """
-CortexAI — RAG Pipeline
+AuraAI — RAG Pipeline
 The core Retrieval-Augmented Generation pipeline using LangChain.
 
 Architecture:

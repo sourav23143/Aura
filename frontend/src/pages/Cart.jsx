@@ -1,9 +1,10 @@
+import { CONFIG } from '../config';
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { IconCart } from '../components/Icons';
 
 export default function Cart({ onNavigate }) {
-  const { cartItems, removeFromCart, clearCart, cartTotal } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, clearCart, cartTotal } = useCart();
   const [showCheckout, setShowCheckout] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -23,7 +24,7 @@ export default function Cart({ onNavigate }) {
         }))
       };
 
-      const res = await fetch('http://localhost:8000/api/orders/checkout', {
+      const res = await fetch('CONFIG.API_URL/api/orders/checkout', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -35,7 +36,8 @@ export default function Cart({ onNavigate }) {
       if (res.ok) {
         setCheckoutStep(3); // Success step
       } else {
-        alert("Checkout failed. Are you logged in?");
+        const errorData = await res.json().catch(() => ({}));
+        alert(errorData.detail || "Checkout failed. Are you logged in?");
       }
     } catch (err) {
       console.error(err);
@@ -93,8 +95,24 @@ export default function Cart({ onNavigate }) {
               <div style={{ flex: 1 }}>
                 <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{item.title}</h3>
                 <span className="badge badge-purple">{item.category}</span>
-                <div style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>
-                  Unit Price: ${item.price_usd?.toLocaleString()} | Qty: {item.quantity}
+                <div style={{ marginTop: '0.5rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span>Unit Price: ${item.price_usd?.toLocaleString()} | Qty:</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid #cbd5e1', borderRadius: '4px', overflow: 'hidden' }}>
+                    <button 
+                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      style={{ padding: '0 0.5rem', border: 'none', background: '#f1f5f9', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      -
+                    </button>
+                    <span style={{ minWidth: '24px', textAlign: 'center', fontSize: '0.9rem', fontWeight: 600 }}>{item.quantity}</span>
+                    <button 
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      style={{ padding: '0 0.5rem', border: 'none', background: '#f1f5f9', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <span style={{ fontSize: '0.75rem', color: '#64748b' }}>({item.inventory_qty !== undefined ? item.inventory_qty : 10} available)</span>
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between' }}>

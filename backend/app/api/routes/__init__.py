@@ -1,1 +1,1 @@
-"""CortexAI — API route modules."""
+"""AuraAI — API route modules."""

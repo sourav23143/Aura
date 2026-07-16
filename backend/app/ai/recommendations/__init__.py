@@ -1,1 +1,1 @@
-"""CortexAI — Recommendations package."""
+"""AuraAI — Recommendations package."""

@@ -1,5 +1,5 @@
 """
-CortexAI — Health Check API Route
+AuraAI — Health Check API Route
 """
 
 from fastapi import APIRouter, Depends

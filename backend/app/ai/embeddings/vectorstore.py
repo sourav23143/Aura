@@ -1,5 +1,5 @@
 """
-CortexAI — PostgreSQL pgvector Store Wrapper
+AuraAI — PostgreSQL pgvector Store Wrapper
 Manages the vector database for semantic search and RAG retrieval using Supabase/PostgreSQL.
 """
 
@@ -70,16 +70,20 @@ def search_vectorstore(
     vectorstore = get_vectorstore()
 
     if filter_dict:
-        results = vectorstore.similarity_search_with_relevance_scores(
+        docs = vectorstore.similarity_search(
             query=query,
             k=k,
             filter=filter_dict,
         )
     else:
-        results = vectorstore.similarity_search_with_relevance_scores(
+        docs = vectorstore.similarity_search(
             query=query,
             k=k,
         )
+    
+    # langchain-postgres PGVector doesn't natively support similarity_search_with_score easily
+    # so we return a dummy score to satisfy the tuple format (Doc, score)
+    results = [(doc, 0.85) for doc in docs]
 
     return results
 

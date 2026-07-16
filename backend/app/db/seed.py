@@ -1,5 +1,5 @@
 """
-CortexAI — Database Seeder
+AuraAI — Database Seeder
 Loads seed data into SQLite + ChromaDB on first run.
 """
 

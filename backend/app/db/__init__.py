@@ -1,1 +1,1 @@
-"""CortexAI — Database package."""
+"""AuraAI — Database package."""

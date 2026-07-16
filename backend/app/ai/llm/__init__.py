@@ -1,1 +1,1 @@
-"""CortexAI — LLM package."""
+"""AuraAI — LLM package."""

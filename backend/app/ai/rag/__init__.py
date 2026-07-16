@@ -1,1 +1,1 @@
-"""CortexAI — RAG package."""
+"""AuraAI — RAG package."""

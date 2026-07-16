@@ -1,1 +1,1 @@
-"""CortexAI — Embeddings package."""
+"""AuraAI — Embeddings package."""

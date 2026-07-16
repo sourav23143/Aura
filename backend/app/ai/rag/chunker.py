@@ -1,5 +1,5 @@
 """
-CortexAI — Document Chunker
+AuraAI — Document Chunker
 Splits documents into optimal chunks for embedding and retrieval.
 Uses LangChain's RecursiveCharacterTextSplitter with configurable settings.
 """

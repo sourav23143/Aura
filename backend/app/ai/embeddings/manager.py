@@ -1,12 +1,12 @@
 """
-CortexAI — Embedding Manager
+AuraAI — Embedding Manager
 Handles embedding generation using sentence-transformers (runs locally, FREE).
 Provides a unified interface for embedding text documents and queries.
 """
 
 import logging
 from functools import lru_cache
-from langchain_huggingface import HuggingFaceEndpointEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings, HuggingFaceEndpointEmbeddings
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -14,14 +14,11 @@ logger = logging.getLogger(__name__)
 _embeddings_instance = None
 
 
-def get_embeddings() -> HuggingFaceEndpointEmbeddings:
+def get_embeddings():
     """
     Get or create the embeddings model instance.
-    Uses sentence-transformers/all-MiniLM-L6-v2 by default:
-    - FREE (runs locally, no API key)
-    - Fast (80+ sentences/sec on CPU)
-    - 384-dimensional vectors
-    - Good quality for semantic search
+    Uses sentence-transformers/all-MiniLM-L6-v2 by default.
+    Toggles between local CPU execution or HuggingFace API based on config.
     """
     global _embeddings_instance
 
@@ -29,11 +26,17 @@ def get_embeddings() -> HuggingFaceEndpointEmbeddings:
         settings = get_settings()
         logger.info(f"Loading embedding model: {settings.embedding_model}")
 
-        _embeddings_instance = HuggingFaceEndpointEmbeddings(
-            model=settings.embedding_model,
-            huggingfacehub_api_token=settings.huggingface_api_key,
-        )
-        logger.info("Embedding model loaded successfully from Hugging Face API")
+        if settings.use_local_embeddings:
+            _embeddings_instance = HuggingFaceEmbeddings(
+                model_name=settings.embedding_model,
+            )
+            logger.info("Embedding model loaded successfully (Running Locally)")
+        else:
+            _embeddings_instance = HuggingFaceEndpointEmbeddings(
+                model=settings.embedding_model,
+                huggingfacehub_api_token=settings.huggingface_api_key,
+            )
+            logger.info("Embedding model loaded successfully (via Hugging Face API)")
 
     return _embeddings_instance
 

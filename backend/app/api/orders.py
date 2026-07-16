@@ -35,8 +35,27 @@ async def checkout(order_in: OrderCreate, current_user: User = Depends(get_curre
     db.add(order)
     await db.flush()  # to get order.id
 
-    # Create the Order Items
+    from app.models import Document
+    from sqlalchemy.orm.attributes import flag_modified
+
+    # Create the Order Items and decrement inventory
     for item in order_in.items:
+        # Check and decrement stock
+        product_res = await db.execute(select(Document).where(Document.id == item.product_id))
+        product = product_res.scalar_one_or_none()
+        if product:
+            meta = dict(product.metadata_json or {})
+            current_qty = meta.get("inventory_qty", 10)  # default to 10 if not set
+            if current_qty < item.quantity:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Insufficient stock for product '{product.title}'. Only {current_qty} left."
+                )
+            meta["inventory_qty"] = current_qty - item.quantity
+            product.metadata_json = meta
+            flag_modified(product, "metadata_json")
+            db.add(product)
+
         db_item = OrderItem(
             order_id=order.id,
             product_id=item.product_id,
@@ -68,3 +87,36 @@ async def get_order_history(current_user: User = Depends(get_current_user), db: 
             "created_at": o.created_at
         } for o in orders
     ]
+
+@router.get("/all")
+async def get_all_orders(db: AsyncSession = Depends(get_db)):
+    """Fetch all orders for the admin dashboard."""
+    result = await db.execute(
+        select(Order).options(selectinload(Order.organization)).order_by(Order.created_at.desc())
+    )
+    orders = result.scalars().all()
+    
+    return [
+        {
+            "id": o.id,
+            "organization_name": o.organization.name if o.organization else "Unknown",
+            "total_amount": o.total_amount,
+            "status": o.status,
+            "created_at": o.created_at
+        } for o in orders
+    ]
+
+class StatusUpdate(BaseModel):
+    status: str
+
+@router.patch("/{order_id}/status")
+async def update_order_status(order_id: str, status_update: StatusUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Order).where(Order.id == order_id))
+    order = result.scalar_one_or_none()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    order.status = status_update.status
+    db.add(order)
+    await db.commit()
+    return {"success": True, "status": order.status}

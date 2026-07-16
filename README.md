@@ -1,4 +1,4 @@
-# CortexAI 🧠
+# AuraAI 🧠
 
 A modular, production-grade AI/ML Engineering platform showcasing RAG, LangGraph multi-agent orchestration, semantic search, and streaming chat.
 
@@ -28,7 +28,7 @@ A modular, production-grade AI/ML Engineering platform showcasing RAG, LangGraph
 ### 2. Setup the Backend (FastAPI + AI)
 1. Open a terminal and navigate to the `backend` folder:
    ```bash
-   cd cortex-ai/backend
+   cd aura-ai/backend
    ```
 2. Create and activate a Python virtual environment:
    ```bash
@@ -55,7 +55,7 @@ A modular, production-grade AI/ML Engineering platform showcasing RAG, LangGraph
 ### 3. Setup the Frontend (React + Vite)
 1. Open a **new** terminal window and navigate to the `frontend` folder:
    ```bash
-   cd cortex-ai/frontend
+   cd aura-ai/frontend
    ```
 2. Install the npm dependencies:
    ```bash

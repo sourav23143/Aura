@@ -1,5 +1,5 @@
 """
-CortexAI — Documents API Route
+AuraAI — Documents API Route
 CRUD operations for documents in the knowledge base.
 """
 
@@ -7,16 +7,14 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-
 from app.schemas import DocumentCreate, DocumentResponse, DocumentList
-from app.models import Document
+from app.models import Document, Review
 from app.ai.rag.chunker import chunk_document
 from app.ai.embeddings.vectorstore import add_documents_to_vectorstore, delete_from_vectorstore
 from app.db.session import get_db
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/documents", tags=["Documents"])
-
 
 @router.get("/", response_model=DocumentList)
 async def list_documents(
@@ -26,13 +24,28 @@ async def list_documents(
     db: AsyncSession = Depends(get_db),
 ):
     """List all documents, optionally filtered by category."""
-    query = select(Document)
+    query = (
+        select(
+            Document,
+            func.coalesce(func.avg(Review.rating), 0.0).label("average_rating"),
+            func.count(Review.id).label("review_count")
+        )
+        .outerjoin(Review, Document.id == Review.product_id)
+        .group_by(Document.id)
+    )
     if category:
         query = query.where(Document.category == category)
     query = query.offset(skip).limit(limit)
 
     result = await db.execute(query)
-    documents = result.scalars().all()
+    rows = result.all()
+
+    documents_resp = []
+    for doc, avg_rating, rev_count in rows:
+        d_dict = DocumentResponse.model_validate(doc).model_dump()
+        d_dict["average_rating"] = float(avg_rating)
+        d_dict["review_count"] = int(rev_count)
+        documents_resp.append(DocumentResponse(**d_dict))
 
     # Count total
     count_query = select(func.count(Document.id))
@@ -41,7 +54,7 @@ async def list_documents(
     total = (await db.execute(count_query)).scalar()
 
     return DocumentList(
-        documents=[DocumentResponse.model_validate(d) for d in documents],
+        documents=documents_resp,
         total=total,
     )
 
@@ -83,8 +96,20 @@ async def create_document(
     Create a new document and embed it into the vector store.
     The document is automatically chunked and embedded for semantic search.
     """
+    # Check if custom ID already exists
+    dump = doc_data.model_dump()
+    if dump.get("id"):
+        # Convert custom ID to lowercase as storefront convention
+        dump["id"] = dump["id"].strip().lower()
+        existing = await db.execute(select(Document).where(Document.id == dump["id"]))
+        if existing.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail=f"SKU / Product ID '{doc_data.id}' already exists.")
+    else:
+        # Remove None or empty string so SQLAlchemy generates UUID
+        dump.pop("id", None)
+
     # Create DB record
-    document = Document(**doc_data.model_dump())
+    document = Document(**dump)
     db.add(document)
     await db.flush()
 
@@ -138,5 +163,34 @@ async def delete_document(
 
     # Delete from DB
     await db.delete(document)
+    await db.commit()
 
     return {"message": f"Document {document_id} deleted"}
+
+@router.put("/{document_id}", response_model=DocumentResponse)
+async def update_document(
+    document_id: str,
+    doc_data: DocumentCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    """Update an existing document."""
+    result = await db.execute(
+        select(Document).where(Document.id == document_id)
+    )
+    document = result.scalar_one_or_none()
+
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # Update fields
+    document.title = doc_data.title
+    document.content = doc_data.content
+    document.category = doc_data.category
+    document.subcategory = doc_data.subcategory
+    document.tags = doc_data.tags
+    document.metadata_json = doc_data.metadata_json
+
+    await db.commit()
+    await db.refresh(document)
+
+    return DocumentResponse.model_validate(document)

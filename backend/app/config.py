@@ -1,5 +1,5 @@
 """
-CortexAI — Application Configuration
+AuraAI — Application Configuration
 Loads settings from .env file using Pydantic BaseSettings.
 """
 
@@ -11,23 +11,24 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     # App
-    app_name: str = "CortexAI"
+    app_name: str = "AuraAI"
     app_env: str = "development"
     app_version: str = "1.0.0"
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
 
     # Database
-    database_url: str = "sqlite+aiosqlite:///./cortexai.db"
+    database_url: str = "sqlite+aiosqlite:///./auraai.db"
 
     # LLM Settings
     groq_api_key: str | None = None
     huggingface_api_key: str | None = None
-    llm_model: str = "llama-3.1-8b-instant"
+    llm_model: str = "llama-3.3-70b-versatile"
     llm_temperature: float = 0.3
     llm_max_tokens: int = 1024
 
-    # Embeddings (local — no API key)
+    # Embeddings (local or API)
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+    use_local_embeddings: bool = True  # Set to False on Render/production to save RAM
 
     # ChromaDB
     chroma_persist_dir: str = "./chroma_db"
@@ -39,7 +40,7 @@ class Settings(BaseSettings):
     retriever_k: int = 5
 
     # Auth
-    jwt_secret: str = "cortexai-dev-secret-change-in-production"
+    jwt_secret: str = "auraai-dev-secret-change-in-production"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
 

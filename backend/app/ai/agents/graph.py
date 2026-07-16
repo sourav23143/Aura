@@ -1,5 +1,5 @@
 """
-CortexAI — LangGraph Multi-Agent Graph
+AuraAI — LangGraph Multi-Agent Graph
 Stateful, multi-step agent orchestration using LangGraph.
 
 Architecture:
@@ -123,10 +123,20 @@ async def chat_node(state: AgentState) -> AgentState:
     Handles conversational queries. Uses RAG with conversation memory.
     """
     try:
-        # Retrieve relevant context
-        retriever = get_retriever(k=5)
-        retrieved_docs_raw = await retriever.ainvoke(state["query"])
-        context = _format_docs(retrieved_docs_raw)
+        # Retrieve relevant context using our robust wrapper
+        search_results = search_vectorstore(query=state["query"], k=5)
+        
+        docs = []
+        retrieved_info = []
+        for doc, score in search_results:
+            metadata = doc.metadata if hasattr(doc, 'metadata') else {}
+            docs.append(doc)
+            retrieved_info.append({
+                "title": metadata.get("doc_title", "Untitled"),
+                "category": metadata.get("category", "General"),
+            })
+
+        context = _format_docs(docs)
 
         # Format chat history
         history = _format_chat_history(state.get("chat_history", []))
@@ -139,15 +149,6 @@ async def chat_node(state: AgentState) -> AgentState:
             "chat_history": history,
             "question": state["query"],
         })
-
-        # Extract doc info
-        retrieved_info = []
-        for doc in retrieved_docs_raw:
-            metadata = doc.metadata if hasattr(doc, 'metadata') else {}
-            retrieved_info.append({
-                "title": metadata.get("doc_title", "Untitled"),
-                "category": metadata.get("category", "General"),
-            })
 
         return {
             **state,
@@ -214,20 +215,45 @@ async def recommend_node(state: AgentState) -> AgentState:
         import json
         import re
         
-        json_match = re.search(r'\{.*\}', raw_response, re.DOTALL)
-        clean_json = json_match.group(0) if json_match else raw_response
+        # Strip markdown code fences if present
+        clean_response = raw_response.strip()
+        if clean_response.startswith("```"):
+            clean_response = re.sub(r'^```(?:json)?\s*', '', clean_response)
+            clean_response = re.sub(r'\s*```$', '', clean_response).strip()
+        
+        # Use greedy search to find the outermost JSON object
+        json_match = re.search(r'\{.*\}', clean_response, re.DOTALL)
         
         try:
-            parsed = json.loads(clean_json)
+            if json_match:
+                # Try parsing the matched JSON block
+                parsed = json.loads(json_match.group(0))
+            else:
+                # Try parsing the entire response as JSON
+                parsed = json.loads(clean_response)
+            
             ai_insights = parsed.get("ai_insights", "Here are my recommendations based on your request.")
             recs = parsed.get("recommendations", [])
             
             response_text = f"{ai_insights}\n\n"
             for r in recs:
                 response_text += f"- **{r.get('title', 'Product')}**: {r.get('reasoning', '')}\n"
+            
+            # Fallback if response is empty
+            if not response_text.strip() or response_text.strip() == "None":
+                response_text = "Based on your request, here are my top picks from our catalog:\n\n"
+                for item in retrieved_info[:5]:
+                    response_text += f"- **{item.get('title', 'Product')}** ({item.get('category', 'General')})\n"
         except Exception as e:
-            logger.error(f"Could not parse recommendation JSON: {e}")
-            response_text = "I have found some excellent products for you, but encountered an error formatting them. Please try again."
+            logger.warning(f"Could not parse recommendation JSON, using fallback: {e}")
+            # Generate a readable fallback response from the raw LLM output
+            # Extract any readable text after common markers
+            if "recommendations:" in raw_response.lower() or "•" in raw_response or "-" in raw_response:
+                response_text = raw_response
+            else:
+                response_text = "Based on your request, here are my top recommendations from our catalog:\n\n"
+                for item in retrieved_info[:5]:
+                    response_text += f"- **{item.get('title', 'Product')}** ({item.get('category', 'General')})\n"
 
         return {
             **state,

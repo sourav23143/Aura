@@ -1,3 +1,4 @@
+import { CONFIG } from './config';
 import { useState, useEffect } from 'react';
 import Home from './pages/Home';
 import Search from './pages/Search';
@@ -7,6 +8,9 @@ import Monitor from './pages/Monitor';
 import Cart from './pages/Cart';
 import Account from './pages/Account';
 import Login from './pages/Login';
+import AdminDashboard from './pages/AdminDashboard';
+import ProductDetail from './pages/ProductDetail';
+import StaticPage from './pages/StaticPage';
 import { useCart } from './context/CartContext';
 import { useAuth } from './context/AuthContext';
 
@@ -21,10 +25,11 @@ function App() {
   const [globalQueryInput, setGlobalQueryInput] = useState('');
   const [autocompleteResults, setAutocompleteResults] = useState([]);
   const [productsDb, setProductsDb] = useState([]);
+  const [isAccountHovered, setIsAccountHovered] = useState(false);
 
   // Fetch catalog for global autocomplete
   useEffect(() => {
-    fetch('http://localhost:8000/api/documents/')
+    fetch('CONFIG.API_URL/api/documents/')
       .then(res => res.json())
       .then(data => {
         if (!data.documents) return;
@@ -70,7 +75,7 @@ function App() {
         setGlobalQuery(''); // Clear global query if no query string
       }
 
-      if (['home', 'search', 'chat', 'recommend', 'monitor', 'cart', 'account'].includes(pageName)) {
+      if (['home', 'search', 'chat', 'recommend', 'monitor', 'cart', 'account', 'admin', 'admin-login', 'product', 'careers', 'about', 'investor-relations', 'sustainability', 'bulk-purchasing', 'institutional-credit', 'shipping-policies', 'returns'].includes(pageName)) {
         setCurrentPage(pageName);
       }
     };
@@ -107,6 +112,21 @@ function App() {
       case 'monitor': return <Monitor onNavigate={navigate} />;
       case 'cart': return user ? <Cart onNavigate={navigate} /> : <Login />;
       case 'account': return user ? <Account onNavigate={navigate} /> : <Login />;
+      case 'admin-login': return user?.role === 'admin' ? <AdminDashboard onNavigate={navigate} /> : <Login adminMode={true} />;
+      case 'admin': return user?.role === 'admin' ? <AdminDashboard onNavigate={navigate} /> : <Login adminMode={true} />;
+      case 'product': {
+        const urlParams = new URLSearchParams(window.location.hash.split('?')[1]);
+        return <ProductDetail productId={urlParams.get('id')} onNavigate={navigate} />;
+      }
+      case 'careers':
+      case 'about':
+      case 'investor-relations':
+      case 'sustainability':
+      case 'bulk-purchasing':
+      case 'institutional-credit':
+      case 'shipping-policies':
+      case 'returns':
+        return <StaticPage pageId={currentPage} />;
       default: return <Home onNavigate={navigate} />;
     }
   };
@@ -198,6 +218,14 @@ function App() {
 
           {/* Right Icons & Links */}
           <ul className="navbar-links" style={{ minWidth: '200px', justifyContent: 'flex-end', gap: '1.5rem' }}>
+            {user?.role === 'admin' && (
+              <li>
+                <a href="#admin" onClick={(e) => { e.preventDefault(); navigate('admin'); }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: 'var(--danger)' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 600 }}>Admin</span>
+                </a>
+              </li>
+            )}
             <li>
               <a href="#recommend" onClick={(e) => { e.preventDefault(); navigate('recommend'); }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: 'var(--text-primary)' }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
@@ -210,11 +238,21 @@ function App() {
                 <span style={{ fontSize: '0.7rem', fontWeight: 600 }}>Support</span>
               </a>
             </li>
-            <li>
+            <li 
+              onMouseEnter={() => setIsAccountHovered(true)} 
+              onMouseLeave={() => setIsAccountHovered(false)}
+              style={{ position: 'relative' }}
+            >
               <a href="#account" onClick={(e) => { e.preventDefault(); navigate('account'); }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: 'var(--text-primary)' }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                <span style={{ fontSize: '0.7rem', fontWeight: 600 }}>Account</span>
+                <span style={{ fontSize: '0.7rem', fontWeight: 600 }}>{user ? 'Account' : 'Login'}</span>
               </a>
+              {!user && isAccountHovered && (
+                <div style={{ position: 'absolute', top: '100%', right: '50%', transform: 'translateX(50%)', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', padding: '0.5rem', width: '160px', zIndex: 100 }}>
+                  <div onClick={() => navigate('account')} style={{ padding: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, borderBottom: '1px solid #f1f5f9' }}>Customer Sign In</div>
+                  <div onClick={() => navigate('admin-login')} style={{ padding: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, color: 'var(--danger)' }}>Admin Portal</div>
+                </div>
+              )}
             </li>
             <li>
               <a href="#cart" onClick={(e) => { e.preventDefault(); navigate('cart'); }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: 'var(--text-primary)', position: 'relative' }}>
@@ -282,10 +320,11 @@ function App() {
           <div>
             <h4 style={{ fontWeight: 700, marginBottom: '1.2rem' }}>Get to Know Us</h4>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              <li><a href="#" style={{ color: 'inherit' }}>Careers</a></li>
-              <li><a href="#" style={{ color: 'inherit' }}>About Aura</a></li>
-              <li><a href="#" style={{ color: 'inherit' }}>Investor Relations</a></li>
-              <li><a href="#" style={{ color: 'inherit' }}>Sustainability</a></li>
+              <li><a href="#careers" onClick={(e) => { e.preventDefault(); navigate('careers'); }} style={{ color: 'inherit' }}>Careers</a></li>
+              <li><a href="#about" onClick={(e) => { e.preventDefault(); navigate('about'); }} style={{ color: 'inherit' }}>About Aura</a></li>
+              <li><a href="#investor-relations" onClick={(e) => { e.preventDefault(); navigate('investor-relations'); }} style={{ color: 'inherit' }}>Investor Relations</a></li>
+              <li><a href="#sustainability" onClick={(e) => { e.preventDefault(); navigate('sustainability'); }} style={{ color: 'inherit' }}>Sustainability</a></li>
+              <li><a href="#admin-login" onClick={() => navigate('admin-login')} style={{ color: 'var(--danger)', fontWeight: 600 }}>Employee Login</a></li>
             </ul>
           </div>
 
@@ -294,8 +333,8 @@ function App() {
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
               <li><a href="#recommend" onClick={() => navigate('recommend')} style={{ color: 'inherit' }}>AI Setup Planner</a></li>
               <li><a href="#chat" onClick={() => navigate('chat')} style={{ color: 'inherit' }}>Consultant Bot</a></li>
-              <li><a href="#" style={{ color: 'inherit' }}>Bulk Purchasing</a></li>
-              <li><a href="#" style={{ color: 'inherit' }}>Institutional Credit</a></li>
+              <li><a href="#bulk-purchasing" onClick={(e) => { e.preventDefault(); navigate('bulk-purchasing'); }} style={{ color: 'inherit' }}>Bulk Purchasing</a></li>
+              <li><a href="#institutional-credit" onClick={(e) => { e.preventDefault(); navigate('institutional-credit'); }} style={{ color: 'inherit' }}>Institutional Credit</a></li>
             </ul>
           </div>
 
@@ -304,8 +343,8 @@ function App() {
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
               <li><a href="#account" onClick={() => navigate('account')} style={{ color: 'inherit' }}>Your Account</a></li>
               <li><a href="#account" onClick={() => navigate('account')} style={{ color: 'inherit' }}>Your Orders</a></li>
-              <li><a href="#" style={{ color: 'inherit' }}>Shipping Rates & Policies</a></li>
-              <li><a href="#" style={{ color: 'inherit' }}>Returns & Replacements</a></li>
+              <li><a href="#shipping-policies" onClick={(e) => { e.preventDefault(); navigate('shipping-policies'); }} style={{ color: 'inherit' }}>Shipping Rates & Policies</a></li>
+              <li><a href="#returns" onClick={(e) => { e.preventDefault(); navigate('returns'); }} style={{ color: 'inherit' }}>Returns & Replacements</a></li>
               <li><a href="#chat" onClick={() => navigate('chat')} style={{ color: 'inherit' }}>Help Center</a></li>
             </ul>
           </div>

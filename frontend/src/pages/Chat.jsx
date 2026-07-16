@@ -1,3 +1,4 @@
+import { CONFIG } from '../config';
 import { useState, useRef, useEffect } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useCart } from '../context/CartContext';
@@ -20,7 +21,7 @@ export default function Chat() {
   const [productsDb, setProductsDb] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/documents/')
+    fetch('CONFIG.API_URL/api/documents/')
       .then(res => res.json())
       .then(data => {
         if (!data.documents) return;
@@ -61,15 +62,18 @@ export default function Chat() {
     if (!ws.isStreaming && messages.length > 0) {
       const lastMsg = messages[messages.length - 1];
       if (lastMsg.role === 'assistant') {
-        fetch('http://localhost:8000/api/chat/suggestions', {
+        fetch('CONFIG.API_URL/api/chat/suggestions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ last_message: lastMsg.content })
         })
         .then(res => res.json())
         .then(data => {
-          if (data.suggestions && data.suggestions.length > 0) {
-            setSuggestions(data.suggestions);
+          if (data.suggestions && Array.isArray(data.suggestions)) {
+            const clean = data.suggestions
+              .map(s => typeof s === 'string' ? s : (s?.question || s?.text || s?.suggestion || JSON.stringify(s)))
+              .filter(Boolean);
+            if (clean.length > 0) setSuggestions(clean);
           }
         })
         .catch(err => console.error("Could not fetch dynamic suggestions", err));
@@ -82,15 +86,18 @@ export default function Chat() {
     if (input.trim().length < 3) return;
     
     const timeoutId = setTimeout(() => {
-      fetch('http://localhost:8000/api/chat/autocomplete', {
+      fetch('CONFIG.API_URL/api/chat/autocomplete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: input })
       })
       .then(res => res.json())
       .then(data => {
-        if (data.suggestions && data.suggestions.length > 0) {
-          setSuggestions(data.suggestions);
+        if (data.suggestions && Array.isArray(data.suggestions)) {
+          const clean = data.suggestions
+            .map(s => typeof s === 'string' ? s : (s?.question || s?.text || s?.suggestion || JSON.stringify(s)))
+            .filter(Boolean);
+          if (clean.length > 0) setSuggestions(clean);
         }
       })
       .catch(err => console.error("Could not fetch autocomplete", err));

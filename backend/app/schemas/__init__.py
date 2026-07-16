@@ -1,5 +1,5 @@
 """
-CortexAI — Pydantic Schemas
+AuraAI — Pydantic Schemas
 Request/response schemas for all API endpoints.
 """
 
@@ -11,6 +11,7 @@ from typing import Optional
 # ─── Document Schemas ─────────────────────────────────────
 
 class DocumentCreate(BaseModel):
+    id: Optional[str] = None
     title: str = Field(..., min_length=1, max_length=500)
     content: str = Field(..., min_length=1)
     category: str = Field(..., min_length=1, max_length=100)
@@ -31,6 +32,8 @@ class DocumentResponse(BaseModel):
     source: Optional[str]
     is_embedded: bool
     created_at: datetime
+    average_rating: float = 0.0
+    review_count: int = 0
 
     class Config:
         from_attributes = True
@@ -98,6 +101,7 @@ class RecommendationProfile(BaseModel):
     budget_range: Optional[str] = None  # "low", "medium", "high"
     priorities: list[str] = []  # ["quality", "affordability", "innovation"]
     top_k: int = Field(default=5, ge=1, le=10)
+    user_email: Optional[str] = None
 
 
 class RecommendationItem(BaseModel):
@@ -107,6 +111,8 @@ class RecommendationItem(BaseModel):
     category: str
     relevance_score: float
     reasoning: str  # AI-generated explanation
+    price_usd: Optional[float] = 0
+    image_url: Optional[str] = ""
 
 
 class RecommendationResponse(BaseModel):
@@ -151,3 +157,26 @@ class HealthResponse(BaseModel):
     groq_connected: bool
     chroma_connected: bool
     db_connected: bool
+
+
+# ─── Review Schemas ───────────────────────────────────────
+
+class ReviewCreate(BaseModel):
+    product_id: str
+    user_email: str
+    rating: int = Field(..., ge=1, le=5)
+    content: Optional[str] = None
+
+
+class ReviewResponse(BaseModel):
+    id: str
+    product_id: str
+    user_email: str
+    rating: int
+    content: Optional[str] = None
+    sentiment: Optional[str] = None
+    sentiment_score: Optional[float] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

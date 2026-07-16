@@ -1,5 +1,5 @@
 """
-CortexAI — LLM Provider
+AuraAI — LLM Provider
 Abstraction layer for LLM access. Currently uses Groq (free tier).
 Designed to be swappable — can switch to OpenAI, Ollama, etc.
 """

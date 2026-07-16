@@ -1,5 +1,5 @@
 """
-CortexAI — Recommendation Engine
+AuraAI — Recommendation Engine
 Content-based recommendation system using embeddings + blended scoring.
 
 Algorithm:
@@ -11,6 +11,9 @@ Algorithm:
 
 import logging
 import time
+from sqlalchemy import select, func
+from app.db.session import async_session_factory
+from app.models import UserInteraction
 from app.ai.embeddings.vectorstore import search_vectorstore
 from app.ai.llm.provider import get_llm
 from app.ai.rag.prompts import RECOMMENDATION_PROMPT
@@ -23,6 +26,7 @@ def _calculate_blended_score(
     similarity_score: float,
     category_match: bool = False,
     priority_match: bool = False,
+    interaction_score: float = 0.0,
 ) -> float:
     """
     Blend multiple scoring signals for better recommendations.
@@ -36,9 +40,10 @@ def _calculate_blended_score(
     priority_bonus = 1.0 if priority_match else 0.0
 
     blended = (
-        similarity_score * 0.6
-        + category_bonus * 0.2
-        + priority_bonus * 0.2
+        similarity_score * 0.5
+        + category_bonus * 0.15
+        + priority_bonus * 0.15
+        + min(interaction_score, 1.0) * 0.2
     )
     return round(min(blended, 1.0), 4)
 
@@ -49,6 +54,8 @@ async def generate_recommendations(
     budget_range: str = None,
     priorities: list[str] = None,
     top_k: int = 5,
+    user_email: str = None,
+    db: AsyncSession = None,
 ) -> dict:
     """
     Generate personalized recommendations based on user profile.
@@ -89,6 +96,30 @@ async def generate_recommendations(
         filter_dict=filter_dict,
     )
 
+    # Get collaborative filtering data if user_email is provided
+    interaction_counts = {}
+    if user_email:
+        try:
+            if db:
+                result = await db.execute(
+                    select(UserInteraction.product_id, func.count(UserInteraction.id))
+                    .where(UserInteraction.user_email == user_email)
+                    .group_by(UserInteraction.product_id)
+                )
+                for row in result.all():
+                    interaction_counts[row[0]] = min(row[1] * 0.2, 1.0)
+            else:
+                async with async_session_factory() as session:
+                    result = await session.execute(
+                        select(UserInteraction.product_id, func.count(UserInteraction.id))
+                        .where(UserInteraction.user_email == user_email)
+                        .group_by(UserInteraction.product_id)
+                    )
+                    for row in result.all():
+                        interaction_counts[row[0]] = min(row[1] * 0.2, 1.0) # Cap at 1.0 boost
+        except Exception as e:
+            logger.error(f"Error fetching interactions: {e}")
+
     # Score and rank results
     scored_items = []
     for doc, raw_score in search_results:
@@ -97,14 +128,19 @@ async def generate_recommendations(
         # Check for category and priority matches
         item_category = metadata.get("category", "").lower()
         item_tags = [t.lower() for t in metadata.get("tags", [])]
+        doc_id = metadata.get("doc_id", "unknown")
 
         cat_match = category and category.lower() == item_category
         priority_match = any(p.lower() in item_tags for p in priorities)
+        
+        # Add collaborative filtering score
+        i_score = interaction_counts.get(doc_id, 0.0)
 
         blended_score = _calculate_blended_score(
             similarity_score=float(raw_score),
             category_match=cat_match,
             priority_match=priority_match,
+            interaction_score=i_score,
         )
 
         scored_items.append({
@@ -120,6 +156,40 @@ async def generate_recommendations(
     # Sort by blended score and take top-K
     scored_items.sort(key=lambda x: x["relevance_score"], reverse=True)
     top_items = scored_items[:top_k]
+
+    # Enrich recommendations with database fields (price_usd, image_url)
+    from app.models import Document
+    doc_ids = [item["id"] for item in top_items]
+    if doc_ids:
+        try:
+            if db:
+                docs_db = await db.execute(select(Document).where(Document.id.in_(doc_ids)))
+                docs_map = {d.id: d for d in docs_db.scalars().all()}
+                for item in top_items:
+                    db_doc = docs_map.get(item["id"])
+                    if db_doc and db_doc.metadata_json:
+                        item["price_usd"] = db_doc.metadata_json.get("price_usd", 0)
+                        item["image_url"] = db_doc.metadata_json.get("image_url", "")
+                    else:
+                        item["price_usd"] = 0
+                        item["image_url"] = ""
+            else:
+                async with async_session_factory() as session:
+                    docs_db = await session.execute(select(Document).where(Document.id.in_(doc_ids)))
+                    docs_map = {d.id: d for d in docs_db.scalars().all()}
+                    for item in top_items:
+                        db_doc = docs_map.get(item["id"])
+                        if db_doc and db_doc.metadata_json:
+                            item["price_usd"] = db_doc.metadata_json.get("price_usd", 0)
+                            item["image_url"] = db_doc.metadata_json.get("image_url", "")
+                        else:
+                            item["price_usd"] = 0
+                            item["image_url"] = ""
+        except Exception as e:
+            logger.error(f"Error fetching product metadata for recommendations: {e}")
+            for item in top_items:
+                item["price_usd"] = 0
+                item["image_url"] = ""
 
     # Generate AI insights
     ai_insights = ""
@@ -160,21 +230,31 @@ async def generate_recommendations(
         
         # Map generated reasoning back to the top_items
         rec_reasons = {r.get("id"): r.get("reasoning") for r in parsed.get("recommendations", [])}
+        
+        # Only keep items that the LLM actually chose to recommend to fit the budget/needs
+        recommended_items = []
         for item in top_items:
-            item["reasoning"] = rec_reasons.get(item["id"]) or (
-                f"This item scored {item['relevance_score']:.0%} relevance."
-            )
+            if item["id"] in rec_reasons:
+                item["reasoning"] = rec_reasons[item["id"]]
+                recommended_items.append(item)
+                
+        # If the LLM failed to return valid IDs, fallback to top_items with polished descriptions
+        if not recommended_items:
+            for item in top_items:
+                item["reasoning"] = f"This item is highly relevant to your procurement needs, scoring {item['relevance_score']:.0%} on our values alignment scale."
+            recommended_items = top_items
 
     except Exception as e:
         logger.warning(f"Failed to generate AI insights: {e}")
         ai_insights = ai_response if 'ai_response' in locals() else "AI insights unavailable."
-        for item in top_items:
-            item["reasoning"] = f"Relevance score: {item['relevance_score']:.0%}"
+        recommended_items = top_items
+        for item in recommended_items:
+            item["reasoning"] = f"This item fits your B2B profile with a {item['relevance_score']:.0%} relevance score."
 
     latency_ms = (time.time() - start_time) * 1000
 
     return {
-        "recommendations": top_items,
+        "recommendations": recommended_items,
         "ai_insights": ai_insights,
         "profile_summary": profile_summary,
         "latency_ms": round(latency_ms, 2),

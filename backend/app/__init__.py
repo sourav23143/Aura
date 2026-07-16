@@ -1,1 +1,1 @@
-"""CortexAI — App package."""
+"""AuraAI — App package."""

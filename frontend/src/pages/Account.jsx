@@ -1,12 +1,16 @@
+import { CONFIG } from '../config';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { IconBriefcase, IconLaptop, IconTarget } from '../components/Icons';
 
 export default function Account({ onNavigate }) {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
+  const { clearCart } = useCart();
   const [activeTab, setActiveTab] = useState('profile');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   
   // States for API data
   const [orders, setOrders] = useState([]);
@@ -40,7 +44,7 @@ export default function Account({ onNavigate }) {
       
       const token = localStorage.getItem('token');
       // Fetch Orders
-      fetch('http://localhost:8000/api/orders/history', {
+      fetch('CONFIG.API_URL/api/orders/history', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.json())
@@ -48,7 +52,7 @@ export default function Account({ onNavigate }) {
       .catch(console.error);
 
       // Fetch Quotes
-      fetch('http://localhost:8000/api/quotes/list', {
+      fetch('CONFIG.API_URL/api/quotes/list', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.json())
@@ -57,9 +61,33 @@ export default function Account({ onNavigate }) {
     }
   }, [user]);
 
+  const saveProfile = async () => {
+    const token = localStorage.getItem('token');
+    const res = await fetch('CONFIG.API_URL/api/auth/profile', {
+      method: 'PUT',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json' 
+      },
+      body: JSON.stringify({ 
+        full_name: profile.contact,
+        organization_name: profile.institution,
+        organization_type: profile.type
+      })
+    });
+    if (res.ok) {
+      alert(t("Profile updated successfully!") || "Profile updated successfully!");
+      setIsEditingProfile(false);
+      // Ideally refresh auth context here to get new names
+      window.location.reload();
+    } else {
+      alert("Failed to update profile.");
+    }
+  };
+
   const saveSettings = async () => {
     const token = localStorage.getItem('token');
-    const res = await fetch('http://localhost:8000/api/auth/settings', {
+    const res = await fetch('CONFIG.API_URL/api/auth/settings', {
       method: 'PUT',
       headers: { 
         'Authorization': `Bearer ${token}`,
@@ -77,7 +105,7 @@ export default function Account({ onNavigate }) {
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2rem', color: 'var(--text-primary)', margin: 0 }}>{t("My Account")}</h1>
-        <button className="btn btn-secondary" onClick={() => { logout(); onNavigate('home'); }}>{t("Sign Out")}</button>
+        <button className="btn btn-secondary" onClick={() => { logout(); clearCart(); onNavigate('home'); }}>{t("Sign Out")}</button>
       </div>
       
       <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '2rem' }}>
@@ -112,25 +140,47 @@ export default function Account({ onNavigate }) {
         <div className="glass-effect" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', minHeight: '500px' }}>
           {activeTab === 'profile' && (
             <div>
-              <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
-                {t('Organization Profile')}
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '1rem' }}>
+                <h2 style={{ fontSize: '1.5rem', margin: 0 }}>
+                  {t('Organization Profile')}
+                </h2>
+                {!isEditingProfile ? (
+                  <button className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.9rem' }} onClick={() => setIsEditingProfile(true)}>
+                    Edit Profile
+                  </button>
+                ) : (
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button className="btn btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.9rem', background: '#e2e8f0', color: '#334155', border: 'none' }} onClick={() => setIsEditingProfile(false)}>Cancel</button>
+                    <button className="btn btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.9rem' }} onClick={saveProfile}>Save Changes</button>
+                  </div>
+                )}
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{t('Institution Name')}</label>
-                  <input type="text" className="input" value={profile.institution} readOnly style={{ width: '100%', background: '#f8fafc' }} />
+                  <input type="text" className="input" value={profile.institution} onChange={e => setProfile({...profile, institution: e.target.value})} readOnly={!isEditingProfile} style={{ width: '100%', background: isEditingProfile ? 'white' : '#f8fafc', border: isEditingProfile ? '1px solid var(--primary)' : '' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{t('Account Type')}</label>
-                  <input type="text" className="input" value={profile.type} readOnly style={{ width: '100%', background: '#f8fafc' }} />
+                  {isEditingProfile ? (
+                    <select className="input" value={profile.type} onChange={e => setProfile({...profile, type: e.target.value})} style={{ width: '100%', background: 'white', border: '1px solid var(--primary)' }}>
+                      <option value="School District">School District</option>
+                      <option value="University">University</option>
+                      <option value="B2B Enterprise">B2B Enterprise</option>
+                      <option value="Individual Teacher">Individual Teacher</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  ) : (
+                    <input type="text" className="input" value={profile.type || 'N/A'} readOnly style={{ width: '100%', background: '#f8fafc' }} />
+                  )}
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{t('Primary Contact')}</label>
-                  <input type="text" className="input" value={profile.contact} readOnly style={{ width: '100%', background: '#f8fafc' }} />
+                  <input type="text" className="input" value={profile.contact} onChange={e => setProfile({...profile, contact: e.target.value})} readOnly={!isEditingProfile} style={{ width: '100%', background: isEditingProfile ? 'white' : '#f8fafc', border: isEditingProfile ? '1px solid var(--primary)' : '' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{t('Contact Email')}</label>
-                  <input type="email" className="input" value={profile.email} readOnly style={{ width: '100%', background: '#f8fafc' }} />
+                  <input type="email" className="input" value={profile.email} readOnly style={{ width: '100%', background: '#f1f5f9', color: '#64748b', cursor: 'not-allowed' }} title="Email cannot be changed" />
                 </div>
               </div>
             </div>
@@ -226,6 +276,41 @@ export default function Account({ onNavigate }) {
                 </div>
                 <div style={{ marginTop: '1rem' }}>
                   <button className="btn btn-primary" onClick={saveSettings}>{t('Save Settings')}</button>
+                </div>
+
+                <div style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-subtle)' }}>
+                  <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--danger)' }}>{t('Danger Zone')}</h4>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                    Once you delete your account, there is no going back. Please be certain.
+                  </p>
+                  <button 
+                    className="btn btn-secondary" 
+                    style={{ borderColor: 'var(--danger)', color: 'var(--danger)' }}
+                    onClick={async () => {
+                      if (window.confirm('Are you sure you want to completely delete your account? This action cannot be undone.')) {
+                        const token = localStorage.getItem('token');
+                        try {
+                          const res = await fetch('CONFIG.API_URL/api/auth/me', {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                          });
+                          if (res.ok) {
+                            logout();
+                            clearCart();
+                            onNavigate('home');
+                            alert('Your account has been deleted successfully.');
+                          } else {
+                            alert('Failed to delete account.');
+                          }
+                        } catch (err) {
+                          console.error('Failed to delete account', err);
+                          alert('Failed to delete account.');
+                        }
+                      }
+                    }}
+                  >
+                    {t('Delete Account')}
+                  </button>
                 </div>
               </div>
             </div>

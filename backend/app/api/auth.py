@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from pydantic import BaseModel, EmailStr
-from passlib.context import CryptContext
+import bcrypt
 import jwt
 from datetime import datetime, timedelta, timezone
 
@@ -13,16 +13,25 @@ from app.config import get_settings
 settings = get_settings()
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = "super-secret-key-for-demo-purposes-only-do-not-use-in-prod"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
 def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+    if isinstance(plain_password, str):
+        plain_password = plain_password.encode('utf-8')
+    if isinstance(hashed_password, str):
+        hashed_password = hashed_password.encode('utf-8')
+    try:
+        return bcrypt.checkpw(plain_password, hashed_password)
+    except ValueError:
+        return False
 
 def get_password_hash(password):
-    return pwd_context.hash(password)
+    if isinstance(password, str):
+        password = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password, salt).decode('utf-8')
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -124,5 +133,50 @@ async def update_settings(settings_in: SettingsUpdate, current_user: User = Depe
     result = await db.execute(select(Organization).where(Organization.id == current_user.organization_id))
     org = result.scalars().first()
     org.settings_json = settings_in.settings
+    await db.commit()
+    return {"success": True}
+
+class ProfileUpdate(BaseModel):
+    full_name: str
+    organization_name: str
+    organization_type: str
+
+@router.put("/profile")
+async def update_profile(profile_in: ProfileUpdate, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    current_user.full_name = profile_in.full_name
+    
+    if current_user.organization_id:
+        result = await db.execute(select(Organization).where(Organization.id == current_user.organization_id))
+        org = result.scalars().first()
+        if org:
+            org.name = profile_in.organization_name
+            org.type = profile_in.organization_type
+            
+    await db.commit()
+    return {"success": True}
+
+@router.delete("/me")
+async def delete_user_account(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    org_id = current_user.organization_id
+    await db.delete(current_user)
+    await db.flush() # Delete user first to avoid FK constraint violations
+    
+    if org_id:
+        result = await db.execute(select(Organization).where(Organization.id == org_id))
+        org = result.scalars().first()
+        if org:
+            from sqlalchemy import delete
+            from app.models import Quote, Order, OrderItem
+            
+            await db.execute(delete(Quote).where(Quote.organization_id == org_id))
+            
+            orders_res = await db.execute(select(Order.id).where(Order.organization_id == org_id))
+            order_ids = [row[0] for row in orders_res.all()]
+            if order_ids:
+                await db.execute(delete(OrderItem).where(OrderItem.order_id.in_(order_ids)))
+                await db.execute(delete(Order).where(Order.organization_id == org_id))
+                
+            await db.delete(org)
+            
     await db.commit()
     return {"success": True}

@@ -1,17 +1,18 @@
 """
-CortexAI — Main FastAPI Application
+AuraAI — Main FastAPI Application
 
 A modular, production-grade AI platform featuring:
-• RAG pipelines (LangChain + ChromaDB + Groq)
+• RAG pipelines (LangChain + pgvector + Groq)
 • Multi-agent orchestration (LangGraph)
-• Semantic search (sentence-transformers embeddings)
-• AI-powered recommendations (embedding similarity + blended scoring)
+• NLP Pipelines (Hugging Face Sentiment Analysis)
+• AI-powered recommendations (Hybrid vector + collaborative filtering)
+• NL2SQL Analytics (Llama-3 text to raw SQL execution)
 • Streaming chat (WebSocket + conversation memory)
-• Agent monitoring dashboard
+• Admin Dashboard & Inventory CRUD
 
-Tech Stack: FastAPI | LangChain | LangGraph | ChromaDB | Groq | SQLAlchemy
+Tech Stack: FastAPI | LangChain | LangGraph | PostgreSQL/Supabase | Hugging Face | Groq
 
-Author: CortexAI
+Author: AuraAI
 License: MIT
 """
 
@@ -29,6 +30,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.db.session import init_db, close_db, async_session_factory
 from app.db.seed import seed_documents
+from app.db.seed_reviews import seed_demo_reviews
 
 from app.api.routes.health import router as health_router
 from app.api.routes.search import router as search_router
@@ -39,6 +41,8 @@ from app.api.routes.agents import router as agents_router
 from app.api.auth import router as auth_router
 from app.api.orders import router as orders_router
 from app.api.quotes import router as quotes_router
+from app.api.routes.analytics import router as analytics_router
+from app.api.routes.reviews import router as reviews_router
 
 # Configure logging
 logging.basicConfig(
@@ -46,7 +50,7 @@ logging.basicConfig(
     format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
     datefmt="%H:%M:%S",
 )
-logger = logging.getLogger("cortexai")
+logger = logging.getLogger("auraai")
 
 
 @asynccontextmanager
@@ -75,6 +79,14 @@ async def lifespan(app: FastAPI):
             f"{seed_result['vector_count']} chunks in vector store"
         )
 
+    # Seed demo reviews for sentiment analysis testing
+    async with async_session_factory() as session:
+        review_result = await seed_demo_reviews(session)
+        if review_result['newly_added'] > 0:
+            logger.info(f"✅ Demo reviews seeded: {review_result['newly_added']} reviews with sentiment labels")
+        else:
+            logger.info(f"✅ Reviews: {review_result['review_count']} already in DB")
+
     logger.info(f"🚀 {settings.app_name} is ready!")
     logger.info(f"   📖 API Docs:   http://localhost:8000/docs")
     logger.info(f"   📘 ReDoc:      http://localhost:8000/redoc")
@@ -91,18 +103,20 @@ async def lifespan(app: FastAPI):
 settings = get_settings()
 
 app = FastAPI(
-    title="CortexAI",
+    title="AuraAI",
     description=(
-        "🧠 **CortexAI** — A modular AI/ML engineering platform featuring "
+        "🧠 **AuraAI** — A modular AI/ML engineering platform featuring "
         "RAG pipelines, multi-agent orchestration, semantic search, and "
         "intelligent recommendations.\n\n"
-        "**AI/ML Stack:** LangChain · LangGraph · ChromaDB · Groq · sentence-transformers\n\n"
+        "**AI/ML Stack:** LangChain · LangGraph · Supabase (pgvector) · Groq (Llama-3) · Hugging Face\n\n"
         "**Features:**\n"
         "- 🔍 Semantic Search (vector similarity)\n"
         "- 🤖 AI Chatbot (RAG + streaming)\n"
-        "- 🎯 AI Recommendations (embedding-based scoring)\n"
+        "- 🎯 Hybrid AI Recommendations (vector + collaborative filtering)\n"
         "- 🔄 Multi-Agent System (LangGraph state machine)\n"
-        "- 📊 Agent Monitoring Dashboard\n"
+        "- 📊 AI Analytics (NL2SQL translation)\n"
+        "- 🎭 Sentiment Analysis (Hugging Face classification)\n"
+        "- 🛒 Secure Admin Portal & Inventory Management\n"
     ),
     version=settings.app_version,
     lifespan=lifespan,
@@ -129,21 +143,25 @@ app.include_router(agents_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
 app.include_router(orders_router, prefix="/api")
 app.include_router(quotes_router, prefix="/api")
+app.include_router(analytics_router, prefix="/api")
+app.include_router(reviews_router, prefix="/api")
 
 
 @app.get("/", tags=["Root"])
 async def root():
     """Root endpoint — welcome message."""
     return {
-        "name": "CortexAI",
+        "name": "AuraAI",
         "version": settings.app_version,
         "description": "AI/ML Engineering Platform",
         "features": [
-            "🔍 Semantic Search (RAG + Vector DB)",
+            "🔍 Semantic Search (RAG + pgvector)",
             "🤖 AI Chatbot (LangChain + Streaming)",
-            "🎯 AI Recommendations (Embedding-based)",
+            "🎯 Hybrid AI Recommendations",
             "🔄 Multi-Agent System (LangGraph)",
-            "📊 Agent Monitoring Dashboard",
+            "📊 AI Analytics (NL2SQL)",
+            "🎭 Sentiment Analysis",
+            "🛒 Admin Portal"
         ],
         "docs": "/docs",
         "health": "/health",

@@ -1,5 +1,5 @@
 """
-CortexAI — Database Session Management
+AuraAI — Database Session Management
 Async SQLAlchemy engine and session factory.
 """
 

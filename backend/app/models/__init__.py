@@ -1,5 +1,5 @@
 """
-CortexAI — Database Models
+AuraAI — Database Models
 SQLAlchemy models for documents, conversations, users, and analytics.
 """
 
@@ -120,7 +120,7 @@ class User(Base):
     email = Column(String(150), unique=True, index=True, nullable=False)
     hashed_password = Column(String(200), nullable=False)
     full_name = Column(String(100), nullable=True)
-    role = Column(String(50), default="admin")
+    role = Column(String(50), default="customer")
     organization_id = Column(String, ForeignKey("organizations.id"), nullable=True)
     created_at = Column(DateTime, default=utc_now)
 
@@ -166,4 +166,31 @@ class Quote(Base):
     created_at = Column(DateTime, default=utc_now)
 
     organization = relationship("Organization", back_populates="quotes")
+
+class Review(Base):
+    """Product Reviews with Sentiment Analysis."""
+    __tablename__ = "reviews"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    product_id = Column(String, ForeignKey("documents.id"), nullable=False)
+    user_email = Column(String(150), nullable=False)
+    rating = Column(Integer, nullable=False) # 1 to 5
+    content = Column(Text, nullable=True)
+    sentiment = Column(String(50), nullable=True) # POSITIVE, NEGATIVE, NEUTRAL
+    sentiment_score = Column(Float, nullable=True) # Confidence score 0-1
+    created_at = Column(DateTime, default=utc_now)
+
+    product = relationship("Document")
+
+class UserInteraction(Base):
+    """Tracks user interactions for collaborative filtering."""
+    __tablename__ = "user_interactions"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_email = Column(String(150), nullable=False)
+    product_id = Column(String, ForeignKey("documents.id"), nullable=False)
+    interaction_type = Column(String(50), nullable=False) # VIEW, CART, PURCHASE
+    created_at = Column(DateTime, default=utc_now)
+
+    product = relationship("Document")
 

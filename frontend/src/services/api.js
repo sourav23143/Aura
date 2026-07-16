@@ -1,4 +1,6 @@
-const API_BASE = 'http://localhost:8000';
+import { CONFIG } from '../config';
+
+const API_BASE = CONFIG.API_URL;
 
 export const api = {
   // ─── Search ────────────────────────────────────
@@ -86,6 +88,6 @@ export const api = {
 
   // ─── WebSocket URL ────────────────────────────
   getWsUrl(sessionId) {
-    return `ws://localhost:8000/api/chat/ws/${sessionId}`;
+    return CONFIG.WS_URL(sessionId);
   },
 };

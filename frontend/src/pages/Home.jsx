@@ -1,12 +1,67 @@
+import { CONFIG } from '../config';
 import { useState, useEffect } from 'react';
 import { IconLaptop, IconBot, IconGlasses, IconChart, IconMicroscope, IconBook } from '../components/Icons';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Home({ onNavigate }) {
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [addedItems, setAddedItems] = useState({});
+
+  // Review submission state
+  const [reviewingProduct, setReviewingProduct] = useState(null);
+  const [reviewContent, setReviewContent] = useState('');
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewEmail, setReviewEmail] = useState('');
+
+  const handleReviewClick = (product) => {
+    setReviewingProduct(product);
+    setReviewContent('');
+    setReviewRating(5);
+    setReviewEmail(user?.email || '');
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    const email = user?.email || reviewEmail;
+    
+    if (!email) {
+      alert("Please enter your email to submit a review.");
+      return;
+    }
+    
+    try {
+      const res = await fetch('CONFIG.API_URL/api/reviews/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          product_id: reviewingProduct.id,
+          user_email: email,
+          rating: Number(reviewRating),
+          content: reviewContent
+        })
+      });
+      
+      if (res.ok) {
+        alert("Review submitted successfully! It has been processed by the Hugging Face sentiment model.");
+        setReviewingProduct(null);
+        setReviewContent('');
+        setReviewRating(5);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(errData.detail || "Failed to submit review.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error submitting review.");
+    }
+  };
 
   const slides = [
     {
@@ -30,7 +85,7 @@ export default function Home({ onNavigate }) {
   ];
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/documents/')
+    fetch('CONFIG.API_URL/api/documents/')
       .then(res => res.json())
       .then(data => {
         if (!data.documents) throw new Error("No documents returned");
@@ -46,7 +101,9 @@ export default function Home({ onNavigate }) {
             title: doc.title,
             category: doc.category,
             price_usd: meta.price_usd || 0,
-            image_url: meta.image_url || 'https://placehold.co/600x400/1e293b/ffffff?text=Product'
+            image_url: meta.image_url || 'https://placehold.co/600x400/1e293b/ffffff?text=Product',
+            average_rating: doc.average_rating || 0,
+            review_count: doc.review_count || 0
           };
         });
         setProducts(mapped);
@@ -84,7 +141,7 @@ export default function Home({ onNavigate }) {
             {slides[currentSlide].desc}
           </p>
           <div style={{ display: 'flex', gap: '1rem' }}>
-            <button className="btn btn-primary glass-effect" onClick={() => onNavigate('search')}>Shop Infrastructure</button>
+            <button className="btn btn-primary" onClick={() => onNavigate('search')}>Shop Infrastructure</button>
             <button className="btn btn-secondary glass-effect" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }} onClick={() => onNavigate('recommend')}>Use AI Planner</button>
           </div>
           <div style={{ display: 'flex', gap: '8px', marginTop: '2rem' }}>
@@ -153,25 +210,31 @@ export default function Home({ onNavigate }) {
                   SAVE 15%
                 </div>
                 
-                <div style={{ padding: 'var(--space-xl) var(--space-md) var(--space-md)', textAlign: 'center', marginBottom: 'var(--space-sm)' }}>
-                  <img 
-                    src={product.image_url} 
-                    alt={product.title} 
-                    style={{ width: '100%', height: '160px', objectFit: 'contain' }} 
-                  />
-                </div>
+                <a href={`#product?id=${product.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                  <div style={{ padding: 'var(--space-xl) var(--space-md) var(--space-md)', textAlign: 'center', marginBottom: 'var(--space-sm)' }}>
+                    <img 
+                      src={product.image_url} 
+                      alt={product.title} 
+                      style={{ width: '100%', height: '160px', objectFit: 'contain' }} 
+                    />
+                  </div>
+                  
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.2rem', lineHeight: '1.3', color: 'var(--primary)' }}>
+                    {product.title}
+                  </h3>
+                  <p style={{ fontSize: '0.75rem', color: '#555555', marginBottom: '0.3rem' }}>
+                    SKU: {product.id.toUpperCase()}
+                  </p>
+                </a>
                 
-                <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.2rem', lineHeight: '1.3' }}>
-                  {product.title}
-                </h3>
-                <p style={{ fontSize: '0.75rem', color: '#555555', marginBottom: '0.3rem' }}>
-                  SKU: {product.id.toUpperCase()}
-                </p>
-                
-                {/* Star Rating Mock */}
-                <div style={{ display: 'flex', gap: '2px', color: '#f59e0b', fontSize: '0.8rem', marginBottom: '0.8rem' }}>
-                  ★ ★ ★ ★ ★ <span style={{ color: '#888', marginLeft: '4px' }}>(42 reviews)</span>
-                </div>
+                {product.review_count > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', marginBottom: '0.6rem' }}>
+                    <div style={{ color: '#fbbf24' }}>
+                      {'★'.repeat(Math.round(product.average_rating))}{'☆'.repeat(5 - Math.round(product.average_rating))}
+                    </div>
+                    <span style={{ color: '#888' }}>({product.review_count})</span>
+                  </div>
+                )}
                 
                 <div style={{ marginBottom: '0.8rem' }}>
                   <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#111111', marginBottom: '0.1rem' }}>B2B pricing</p>
@@ -191,16 +254,92 @@ export default function Home({ onNavigate }) {
 
                 <button 
                   className="btn btn-primary" 
-                  style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', fontWeight: 600 }}
-                  onClick={() => addToCart(product)}
+                  style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', fontWeight: 600, backgroundColor: addedItems[product.id] ? 'var(--success)' : 'var(--primary)', transition: 'background-color 0.3s ease' }}
+                  onClick={() => {
+                    addToCart(product);
+                    setAddedItems(prev => ({...prev, [product.id]: true}));
+                    setTimeout(() => setAddedItems(prev => ({...prev, [product.id]: false})), 2000);
+                  }}
                 >
-                  Add to Cart
+                  {addedItems[product.id] ? '✓ Added' : 'Add to Cart'}
                 </button>
               </div>
             ))}
           </div>
         )}
       </section>
+
+      {/* Review Modal Overlay */}
+      {reviewingProduct && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+          <div className="card" style={{ width: '100%', maxWidth: '500px', background: 'white', padding: '2rem', position: 'relative' }}>
+            <button 
+              onClick={() => setReviewingProduct(null)}
+              style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#888' }}
+            >
+              &times;
+            </button>
+            <h2 style={{ marginBottom: '1.5rem', fontSize: '1.5rem', color: '#111' }}>Write a Review</h2>
+            <h3 style={{ fontSize: '1.1rem', color: '#555', marginBottom: '1.5rem' }}>{reviewingProduct.title}</h3>
+            
+            <form onSubmit={handleReviewSubmit}>
+              {!user && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#555', marginBottom: '4px', fontWeight: 600 }}>Your Email Address</label>
+                  <input 
+                    required 
+                    type="email" 
+                    placeholder="name@institution.edu" 
+                    className="input" 
+                    value={reviewEmail} 
+                    onChange={e => setReviewEmail(e.target.value)} 
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              )}
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: '#555', marginBottom: '4px', fontWeight: 600 }}>Rating</label>
+                <select 
+                  value={reviewRating} 
+                  onChange={e => setReviewRating(Number(e.target.value))} 
+                  className="input" 
+                  style={{ width: '100%', padding: '0.5rem' }}
+                >
+                  <option value={5}>★★★★★ (5 Stars)</option>
+                  <option value={4}>★★★★☆ (4 Stars)</option>
+                  <option value={3}>★★★☆☆ (3 Stars)</option>
+                  <option value={2}>★★☆☆☆ (2 Stars)</option>
+                  <option value={1}>★☆☆☆☆ (1 Star)</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: '#555', marginBottom: '4px', fontWeight: 600 }}>Your Review</label>
+                <textarea 
+                  required 
+                  placeholder="Write your feedback here... DistilBERT will analyze the sentiment in real-time." 
+                  className="input" 
+                  rows={4}
+                  value={reviewContent} 
+                  onChange={e => setReviewContent(e.target.value)} 
+                  style={{ width: '100%', resize: 'vertical' }}
+                />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setReviewingProduct(null)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Submit Review
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

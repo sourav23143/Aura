@@ -1,5 +1,5 @@
 """
-CortexAI — Search API Route
+AuraAI — Search API Route
 Semantic search powered by RAG pipeline + ChromaDB vector search.
 """
 
@@ -36,6 +36,21 @@ async def semantic_search(
         generate_summary=request.use_ai_summary,
     )
 
+    # Enrich results with database fields (price_usd, image_url)
+    from sqlalchemy import select
+    from app.models import Document
+    
+    doc_ids = [r["id"] for r in result["results"]]
+    if doc_ids:
+        docs_db = await db.execute(select(Document).where(Document.id.in_(doc_ids)))
+        docs_map = {d.id: d for d in docs_db.scalars().all()}
+        
+        for r in result["results"]:
+            db_doc = docs_map.get(r["id"])
+            if db_doc and db_doc.metadata_json:
+                r["metadata_json"]["price_usd"] = db_doc.metadata_json.get("price_usd", 0)
+                r["metadata_json"]["image_url"] = db_doc.metadata_json.get("image_url", "")
+
     # Log search for analytics
     search_log = SearchLog(
         query=request.query,
@@ -44,6 +59,7 @@ async def semantic_search(
         latency_ms=result["latency_ms"],
     )
     db.add(search_log)
+    await db.commit()
 
     return SearchResponse(
         query=request.query,

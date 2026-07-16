@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: cortex-ai-backend
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: HUGGINGFACE_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: LLM_MODEL
+        value: llama-3.1-8b-instant
+      - key: EMBEDDING_MODEL
+        value: sentence-transformers/all-MiniLM-L6-v2
+      - key: APP_ENV
+        value: production
+      - key: CORS_ORIGINS
+        value: "https://cortex-ai-frontend.vercel.app" # Will need to be updated with actual frontend URL

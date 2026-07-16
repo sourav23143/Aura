@@ -1,15 +1,19 @@
+import { CONFIG } from '../config';
 import { useState, useEffect, useMemo } from 'react';
 import { api } from '../services/api';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { IconSparkles } from '../components/Icons';
 import FormattedText from '../components/FormattedText';
 
 export default function Search({ initialQuery = '' }) {
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [addedItems, setAddedItems] = useState({});
   
   // For standard rendering if AI semantic search isn't triggered
   const [productsDb, setProductsDb] = useState([]);
@@ -17,7 +21,13 @@ export default function Search({ initialQuery = '' }) {
   // Filtering state
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedPrice, setSelectedPrice] = useState('all'); // 'all', 'under1k', '1k-3k', 'over3k'
-  const [inStockOnly, setInStockOnly] = useState(true);
+  const [inStockOnly, setInStockOnly] = useState(false);
+
+  // Review submission state
+  const [reviewingProduct, setReviewingProduct] = useState(null);
+  const [reviewContent, setReviewContent] = useState('');
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewEmail, setReviewEmail] = useState('');
 
   useEffect(() => {
     // Sync initial query when navigated to from outside
@@ -32,7 +42,7 @@ export default function Search({ initialQuery = '' }) {
 
   const fetchAllProducts = () => {
     setLoading(true);
-    fetch('http://localhost:8000/api/documents/')
+    fetch('CONFIG.API_URL/api/documents/')
       .then(res => res.json())
       .then(data => {
         if (!data.documents) throw new Error("No documents returned");
@@ -41,7 +51,16 @@ export default function Search({ initialQuery = '' }) {
           if (doc.metadata_json) {
             try { meta = typeof doc.metadata_json === 'string' ? JSON.parse(doc.metadata_json) : doc.metadata_json; } catch(e){}
           }
-          return { id: doc.id, title: doc.title, category: doc.category, price_usd: meta.price_usd || 0, image_url: meta.image_url || 'https://placehold.co/600x400/1e293b/ffffff?text=Product' };
+          return {
+            id: doc.id, 
+            title: doc.title, 
+            category: doc.category, 
+            price_usd: meta.price_usd || 0, 
+            image_url: meta.image_url || 'https://placehold.co/600x400/1e293b/ffffff?text=Product',
+            inventory_qty: meta.inventory_qty !== undefined ? meta.inventory_qty : 10,
+            average_rating: doc.average_rating || 0,
+            review_count: doc.review_count || 0
+          };
         });
         setProductsDb(mapped);
         setResults(null); // Clear semantic results
@@ -82,6 +101,51 @@ export default function Search({ initialQuery = '' }) {
     );
   };
 
+  const handleReviewClick = (product) => {
+    setReviewingProduct(product);
+    setReviewContent('');
+    setReviewRating(5);
+    setReviewEmail(user?.email || '');
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    const email = user?.email || reviewEmail;
+    
+    if (!email) {
+      alert("Please enter your email to submit a review.");
+      return;
+    }
+    
+    try {
+      const res = await fetch('CONFIG.API_URL/api/reviews/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          product_id: reviewingProduct.id,
+          user_email: email,
+          rating: Number(reviewRating),
+          content: reviewContent
+        })
+      });
+      
+      if (res.ok) {
+        alert("Review submitted successfully! It has been processed by the Hugging Face sentiment model.");
+        setReviewingProduct(null);
+        setReviewContent('');
+        setReviewRating(5);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(errData.detail || "Failed to submit review.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error submitting review.");
+    }
+  };
+
   // Derive final filtered products
   const displayedItems = useMemo(() => {
     let items = [];
@@ -91,30 +155,24 @@ export default function Search({ initialQuery = '' }) {
         if (r.metadata_json) {
           try { meta = typeof r.metadata_json === 'string' ? JSON.parse(r.metadata_json) : r.metadata_json; } catch(e){}
         }
+        const dbItem = productsDb.find(p => p.id === r.id);
         return {
           ...r,
           price_usd: meta.price_usd || 0,
-          image_url: meta.image_url || 'https://placehold.co/600x400/1e293b/ffffff?text=Product'
+          image_url: meta.image_url || 'https://placehold.co/600x400/1e293b/ffffff?text=Product',
+          inventory_qty: meta.inventory_qty !== undefined ? meta.inventory_qty : 10,
+          average_rating: dbItem ? dbItem.average_rating : 0,
+          review_count: dbItem ? dbItem.review_count : 0
         };
       });
     } else {
       items = productsDb;
     }
 
-    // Normalize mapping just in case
+    // Normalize mapping
     items = items.map(item => {
-      const isSearchResult = !!results;
-      
-      if (isSearchResult) {
-        // Semantic search results only have vector metadata, so map back to full product
-        const docId = item.metadata_json?.doc_id || item.id;
-        const realProduct = productsDb.find(p => p.id === docId);
-        
-        if (realProduct) {
-          // Deduplicate if multiple chunks from same doc match (though we shouldn't show multiple, just take the first)
-          return { ...realProduct, score: item.score };
-        }
-      }
+      // The backend API now enriches metadata_json with price_usd and image_url
+      // so we don't need to try and find the product in the local productsDb which only has 20 items.
       return item;
     });
     
@@ -140,8 +198,10 @@ export default function Search({ initialQuery = '' }) {
       });
     }
 
-    // In a real app we'd filter by inventory count, but for now we'll just mock it
-    // if (inStockOnly) items = items.filter(...)
+    // Filter by stock if inStockOnly is active
+    if (inStockOnly) {
+      items = items.filter(item => item.inventory_qty > 0);
+    }
 
     return items;
   }, [results, productsDb, selectedCategories, selectedPrice, inStockOnly]);
@@ -246,6 +306,7 @@ export default function Search({ initialQuery = '' }) {
             <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
               {displayedItems.length > 0 ? (
                 displayedItems.map((item, index) => {
+                  const isOutOfStock = item.inventory_qty <= 0;
                   return (
                     <div 
                       className="card" 
@@ -265,28 +326,34 @@ export default function Search({ initialQuery = '' }) {
                            {(item.score * 100).toFixed(0)}% MATCH
                          </div>
                       )}
-                      <div style={{ padding: 'var(--space-md)', textAlign: 'center', marginBottom: 'var(--space-sm)' }}>
-                        <img 
-                          src={item.image_url} 
-                          alt={item.title} 
-                          onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/1e293b/ffffff?text=Product' }}
-                          style={{ width: '100%', height: '140px', objectFit: 'contain' }} 
-                        />
-                      </div>
+                      <a href={`#product?id=${item.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                        <div style={{ padding: 'var(--space-md)', textAlign: 'center', marginBottom: 'var(--space-sm)' }}>
+                          <img 
+                            src={item.image_url} 
+                            alt={item.title} 
+                            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/1e293b/ffffff?text=Product' }}
+                            style={{ width: '100%', height: '140px', objectFit: 'contain' }} 
+                          />
+                        </div>
+                        
+                        <h3 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.2rem', lineHeight: '1.3', color: 'var(--primary)' }}>
+                          {item.title}
+                        </h3>
+                        <p style={{ fontSize: '0.7rem', color: '#888', marginBottom: '0.3rem' }}>
+                          SKU: {item.id ? item.id.toUpperCase() : 'N/A'} | {item.category}
+                        </p>
+                      </a>
                       
-                      <h3 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.2rem', lineHeight: '1.3' }}>
-                        {item.title}
-                      </h3>
-                      <p style={{ fontSize: '0.7rem', color: '#888', marginBottom: '0.3rem' }}>
-                        SKU: {item.id ? item.id.toUpperCase() : 'N/A'} | {item.category}
-                      </p>
+                      {item.review_count > 0 && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', marginBottom: '0.6rem' }}>
+                          <div style={{ color: '#fbbf24' }}>
+                            {'★'.repeat(Math.round(item.average_rating))}{'☆'.repeat(5 - Math.round(item.average_rating))}
+                          </div>
+                          <span style={{ color: '#888' }}>({item.review_count})</span>
+                        </div>
+                      )}
                       
-                      {/* Star Rating Mock */}
-                      <div style={{ display: 'flex', gap: '2px', color: '#f59e0b', fontSize: '0.75rem', marginBottom: '0.6rem' }}>
-                        ★ ★ ★ ★ ★ <span style={{ color: '#888', marginLeft: '4px' }}>(28)</span>
-                      </div>
-                      
-                      <div style={{ marginBottom: '0.6rem', flexGrow: 1 }}>
+                      <div style={{ marginBottom: '0.6rem', flexGrow: 1, marginTop: item.review_count > 0 ? '0' : '0.6rem' }}>
                         <p style={{ fontSize: '0.7rem', fontWeight: 700, color: '#111111', marginBottom: '0.1rem' }}>B2B pricing</p>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
                           <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#111111' }}>
@@ -296,18 +363,23 @@ export default function Search({ initialQuery = '' }) {
                       </div>
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-sm)' }}>
-                        <p style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ width: '6px', height: '6px', background: 'var(--success)', borderRadius: '50%', display: 'inline-block' }}></span>
-                          In Stock
+                        <p style={{ fontSize: '0.7rem', fontWeight: 600, color: isOutOfStock ? '#ef4444' : 'var(--success)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ width: '6px', height: '6px', background: isOutOfStock ? '#ef4444' : 'var(--success)', borderRadius: '50%', display: 'inline-block' }}></span>
+                          {isOutOfStock ? 'Out of Stock' : `In Stock (${item.inventory_qty} left)`}
                         </p>
                       </div>
 
                       <button 
                         className="btn btn-primary" 
-                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', fontWeight: 600, fontSize: '0.85rem' }}
-                        onClick={() => addToCart(item)}
+                        disabled={isOutOfStock}
+                        style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', fontWeight: 600, fontSize: '0.85rem', opacity: isOutOfStock ? 0.6 : 1, backgroundColor: addedItems[item.id] ? 'var(--success)' : 'var(--primary)', transition: 'background-color 0.3s ease' }}
+                        onClick={() => {
+                          addToCart(item);
+                          setAddedItems(prev => ({...prev, [item.id]: true}));
+                          setTimeout(() => setAddedItems(prev => ({...prev, [item.id]: false})), 2000);
+                        }}
                       >
-                        Add to Cart
+                        {isOutOfStock ? 'Out of Stock' : (addedItems[item.id] ? '✓ Added' : 'Add to Cart')}
                       </button>
                     </div>
                   );
@@ -321,6 +393,78 @@ export default function Search({ initialQuery = '' }) {
           </div>
         )}
       </div>
+
+      {/* Review Modal Overlay */}
+      {reviewingProduct && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+          <div className="card" style={{ width: '100%', maxWidth: '500px', background: 'white', padding: '2rem', position: 'relative' }}>
+            <button 
+              onClick={() => setReviewingProduct(null)}
+              style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#888' }}
+            >
+              &times;
+            </button>
+            <h2 style={{ marginBottom: '1.5rem', fontSize: '1.5rem', color: '#111' }}>Write a Review</h2>
+            <h3 style={{ fontSize: '1.1rem', color: '#555', marginBottom: '1.5rem' }}>{reviewingProduct.title}</h3>
+            
+            <form onSubmit={handleReviewSubmit}>
+              {!user && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#555', marginBottom: '4px', fontWeight: 600 }}>Your Email Address</label>
+                  <input 
+                    required 
+                    type="email" 
+                    placeholder="name@institution.edu" 
+                    className="input" 
+                    value={reviewEmail} 
+                    onChange={e => setReviewEmail(e.target.value)} 
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              )}
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: '#555', marginBottom: '4px', fontWeight: 600 }}>Rating</label>
+                <select 
+                  value={reviewRating} 
+                  onChange={e => setReviewRating(Number(e.target.value))} 
+                  className="input" 
+                  style={{ width: '100%', padding: '0.5rem' }}
+                >
+                  <option value={5}>★★★★★ (5 Stars)</option>
+                  <option value={4}>★★★★☆ (4 Stars)</option>
+                  <option value={3}>★★★☆☆ (3 Stars)</option>
+                  <option value={2}>★★☆☆☆ (2 Stars)</option>
+                  <option value={1}>★☆☆☆☆ (1 Star)</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: '#555', marginBottom: '4px', fontWeight: 600 }}>Your Review</label>
+                <textarea 
+                  required 
+                  placeholder="Write your feedback here... DistilBERT will analyze the sentiment in real-time." 
+                  className="input" 
+                  rows={4}
+                  value={reviewContent} 
+                  onChange={e => setReviewContent(e.target.value)} 
+                  style={{ width: '100%', resize: 'vertical' }}
+                />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setReviewingProduct(null)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Submit Review
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

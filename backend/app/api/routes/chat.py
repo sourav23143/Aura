@@ -1,5 +1,5 @@
 """
-CortexAI — Chat API Route
+AuraAI — Chat API Route
 WebSocket-based streaming chat + REST fallback, powered by RAG.
 """
 
@@ -156,8 +156,22 @@ async def chat_autocomplete(req: AutocompleteRequest):
             content = content[3:-3].strip()
             
         suggestions = json.loads(content)
-        if isinstance(suggestions, list) and len(suggestions) >= 3:
-            return {"suggestions": suggestions[:3]}
+        if isinstance(suggestions, list):
+            clean_suggestions = []
+            for item in suggestions:
+                if isinstance(item, str):
+                    clean_suggestions.append(item)
+                elif isinstance(item, dict):
+                    val = item.get("question") or item.get("text") or item.get("suggestion")
+                    if not val:
+                        for k, v in item.items():
+                            if isinstance(v, str):
+                                val = v
+                                break
+                    if val:
+                        clean_suggestions.append(val)
+            if clean_suggestions:
+                return {"suggestions": clean_suggestions[:3]}
     except Exception as e:
         logger.error(f"Failed to generate autocomplete: {e}")
         

@@ -1,5 +1,5 @@
 """
-CortexAI — Agent Monitoring API Route
+AuraAI — Agent Monitoring API Route
 Provides visibility into agent decisions for the monitoring dashboard.
 """
 

@@ -1,6 +1,8 @@
+import { CONFIG } from '../config';
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { IconTarget, IconBriefcase, IconCart, IconSparkles } from '../components/Icons';
 import FormattedText from '../components/FormattedText';
 
@@ -8,6 +10,7 @@ const STEPS = ['School Profile', 'Budget & Focus', 'Your Proposal'];
 
 export default function Recommend() {
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -15,7 +18,7 @@ export default function Recommend() {
   const [productsDb, setProductsDb] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/documents/')
+    fetch('CONFIG.API_URL/api/documents/')
       .then(res => res.json())
       .then(data => {
         if (!data.documents) throw new Error("No documents returned");
@@ -61,7 +64,11 @@ export default function Recommend() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.recommend(profile);
+      const payload = { ...profile };
+      if (user) {
+        payload.user_email = user.email;
+      }
+      const data = await api.recommend(payload);
       setResults(data);
       setStep(2);
     } catch (err) {
@@ -84,7 +91,7 @@ export default function Recommend() {
         return acc + (dbProduct ? dbProduct.price_usd : 0);
       }, 0) || 0;
 
-      const res = await fetch('http://localhost:8000/api/quotes/generate', {
+      const res = await fetch('CONFIG.API_URL/api/quotes/generate', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -222,23 +229,60 @@ export default function Recommend() {
           {/* Recommendations (Cart) */}
           <h3 className="mb-md">Proposed Cart</h3>
           <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-            {results.recommendations?.map((rec, i) => (
-              <div className="card" key={i} style={{ display: 'flex', flexDirection: 'column' }}>
-                <div className="flex items-center gap-sm" style={{ justifyContent: 'space-between', marginBottom: 'var(--space-md)' }}>
-                  <span className="badge badge-purple">{rec.category || 'Product'}</span>
-                  <span style={{ fontSize: 'var(--font-size-md)', color: 'var(--text-primary)', fontWeight: 700 }}>
-                    #{i + 1}
-                  </span>
+            {results.recommendations?.map((rec, i) => {
+              const imageUrl = rec.image_url || 'https://placehold.co/600x400/1e293b/ffffff?text=Product';
+              const price = rec.price_usd;
+
+              return (
+                <div className="card" key={i} style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                  <div className="flex items-center gap-sm" style={{ justifyContent: 'space-between', marginBottom: 'var(--space-md)' }}>
+                    <span className="badge badge-purple">{rec.category || 'Product'}</span>
+                    <span style={{ fontSize: 'var(--font-size-md)', color: 'var(--text-primary)', fontWeight: 700 }}>
+                      #{i + 1}
+                    </span>
+                  </div>
+                  {imageUrl && (
+                    <div style={{ textAlign: 'center', marginBottom: 'var(--space-sm)' }}>
+                      <img 
+                        src={imageUrl} 
+                        alt={rec.title} 
+                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/1e293b/ffffff?text=Product' }}
+                        style={{ width: '100%', height: '140px', objectFit: 'contain', borderRadius: '4px' }} 
+                      />
+                    </div>
+                  )}
+                  <h4 style={{ marginBottom: 'var(--space-xs)', fontSize: '1rem', fontWeight: 750 }}>{rec.title}</h4>
+                  
+                  {price !== undefined && price > 0 && (
+                    <p style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary)', marginBottom: 'var(--space-sm)' }}>
+                      ${price.toLocaleString()}.00
+                    </p>
+                  )}
+                  
+                  <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-md)', flex: 1 }}>
+                    {rec.reasoning}
+                  </div>
+                  <div className="mt-md" style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 700, color: 'var(--accent-info)' }}>Recommended Value Match: {(rec.relevance_score * 100).toFixed(0)}%</span>
+                    <button
+                      className="btn btn-primary"
+                      style={{ fontSize: 'var(--font-size-xs)', padding: '6px 14px', whiteSpace: 'nowrap' }}
+                      onClick={() => {
+                        addToCart({
+                          id: rec.id,
+                          title: rec.title,
+                          category: rec.category,
+                          price_usd: rec.price_usd || 0,
+                          image_url: rec.image_url || 'https://placehold.co/600x400/1e293b/ffffff?text=Product'
+                        });
+                      }}
+                    >
+                      <IconCart size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} /> Add to Cart
+                    </button>
+                  </div>
                 </div>
-                <h4 style={{ marginBottom: 'var(--space-sm)' }}>{rec.title}</h4>
-                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-muted)', marginBottom: 'var(--space-md)', flex: 1 }}>
-                  {rec.reasoning}
-                </div>
-                <div className="mt-md" style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-sm)' }}>
-                  <span style={{ fontWeight: 700, color: 'var(--accent-info)' }}>Recommended Value Match: {(rec.relevance_score * 100).toFixed(0)}%</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="text-center mt-xl">
@@ -247,8 +291,13 @@ export default function Recommend() {
               style={{ marginRight: '1rem' }}
               onClick={() => {
                 results.recommendations?.forEach(rec => {
-                  const dbProduct = productsDb.find(p => p.id === rec.id);
-                  addToCart(dbProduct || { id: rec.id, title: rec.title, category: rec.category, price_usd: 0, image_url: 'https://placehold.co/600x400/1e293b/ffffff?text=Product' });
+                  addToCart({ 
+                    id: rec.id, 
+                    title: rec.title, 
+                    category: rec.category, 
+                    price_usd: rec.price_usd || 0, 
+                    image_url: rec.image_url || 'https://placehold.co/600x400/1e293b/ffffff?text=Product' 
+                  });
                 });
                 window.location.hash = 'cart';
               }}

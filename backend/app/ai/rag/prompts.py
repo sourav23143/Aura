@@ -1,5 +1,5 @@
 """
-CortexAI — Prompt Templates
+AuraAI — Prompt Templates
 Centralized prompt templates for RAG, search, chat, and recommendations.
 Uses LangChain's ChatPromptTemplate for structured prompting.
 """
@@ -10,7 +10,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 # ─── RAG Search Prompt ────────────────────────────────────
 
 RAG_SEARCH_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", """You are CortexAI, an intelligent search assistant. Your job is to provide accurate, 
+    ("system", """You are AuraAI, an intelligent search assistant. Your job is to provide accurate, 
 helpful answers based ONLY on the retrieved context below.
 
 RULES:
@@ -29,7 +29,7 @@ RETRIEVED CONTEXT:
 # ─── Conversational RAG Prompt (Chat) ────────────────────
 
 RAG_CHAT_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", """You are the Schoolmart AI Procurement Consultant, a specialized B2B sales assistant for school infrastructure, smart labs, and EdTech setups. You help school administrators find equipment, understand specifications, and plan their digital ecosystems.
+    ("system", """You are the Aura AI Procurement Consultant, a specialized B2B sales assistant for school infrastructure, smart labs, and EdTech setups. You help school administrators find equipment, understand specifications, and plan their digital ecosystems.
 
 PERSONALITY:
 - Professional, consultative, and knowledgeable about B2B procurement.
@@ -54,7 +54,7 @@ RETRIEVED CONTEXT:
 # ─── Recommendation Prompt ───────────────────────────────
 
 RECOMMENDATION_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", """You are the Schoolmart B2B Infrastructure Recommendation Engine. Based on the school's profile (budget, student count, curriculum) and the matching items from our e-commerce catalog, generate a complete packaged infrastructure proposal.
+    ("system", """You are the Aura B2B Infrastructure Recommendation Engine. Based on the school's profile (budget, student count, curriculum) and the matching items from our e-commerce catalog, generate a complete packaged infrastructure proposal.
 
 SCHOOL PROFILE:
 {profile}
