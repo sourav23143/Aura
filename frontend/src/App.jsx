@@ -26,6 +26,7 @@ function App() {
   const [autocompleteResults, setAutocompleteResults] = useState([]);
   const [productsDb, setProductsDb] = useState([]);
   const [isAccountHovered, setIsAccountHovered] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Fetch catalog for global autocomplete
   useEffect(() => {
@@ -216,8 +217,8 @@ function App() {
             )}
           </form>
 
-          {/* Right Icons & Links */}
-          <ul className="navbar-links" style={{ minWidth: '200px', justifyContent: 'flex-end', gap: '1.5rem' }}>
+          {/* Right Icons & Links — Desktop Only */}
+          <ul className="navbar-links desktop-only" style={{ minWidth: '200px', justifyContent: 'flex-end', gap: '1.5rem' }}>
             {user?.role === 'admin' && (
               <li>
                 <a href="#admin" onClick={(e) => { e.preventDefault(); navigate('admin'); }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: 'var(--danger)' }}>
@@ -269,6 +270,25 @@ function App() {
               </a>
             </li>
           </ul>
+
+          {/* Mobile: Cart icon + Hamburger */}
+          <div className="mobile-menu-toggle" style={{ display: 'none', alignItems: 'center', gap: '8px' }}>
+            <a href="#cart" onClick={(e) => { e.preventDefault(); navigate('cart'); }} style={{ position: 'relative', color: 'var(--text-primary)' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              {itemCount > 0 && (
+                <span style={{ position: 'absolute', top: '-6px', right: '-6px', background: 'var(--danger)', color: 'white', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 'bold' }}>
+                  {itemCount}
+                </span>
+              )}
+            </a>
+            <button onClick={() => setMobileMenuOpen(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: 'var(--text-primary)' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            </button>
+          </div>
         </div>
         
         {/* Category Navigation Bar */}
@@ -286,6 +306,51 @@ function App() {
           </ul>
         </div>
       </nav>
+
+      {/* Mobile Navigation Drawer */}
+      {mobileMenuOpen && (
+        <div className="mobile-nav-overlay open" onClick={() => setMobileMenuOpen(false)} />
+      )}
+      <div className={`mobile-nav-drawer ${mobileMenuOpen ? 'open' : ''}`}>
+        <div className="mobile-nav-header">
+          <span style={{ fontWeight: 800, fontSize: '1.2rem' }}>Menu</span>
+          <button onClick={() => setMobileMenuOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.5rem', color: 'var(--text-primary)' }}>&times;</button>
+        </div>
+        <ul className="mobile-nav-links">
+          {user?.role === 'admin' && (
+            <li><a href="#admin" onClick={(e) => { e.preventDefault(); navigate('admin'); setMobileMenuOpen(false); }} style={{ color: 'var(--danger)' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Admin Dashboard
+            </a></li>
+          )}
+          <li><a href="#recommend" onClick={(e) => { e.preventDefault(); navigate('recommend'); setMobileMenuOpen(false); }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            AI Planner
+          </a></li>
+          <li><a href="#chat" onClick={(e) => { e.preventDefault(); navigate('chat'); setMobileMenuOpen(false); }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            Support Chat
+          </a></li>
+          <li><a href="#account" onClick={(e) => { e.preventDefault(); navigate('account'); setMobileMenuOpen(false); }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            {user ? 'My Account' : 'Sign In'}
+          </a></li>
+          <li><a href="#cart" onClick={(e) => { e.preventDefault(); navigate('cart'); setMobileMenuOpen(false); }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Cart {itemCount > 0 && `(${itemCount})`}
+          </a></li>
+          <li><div onClick={() => { navigate('search'); setMobileMenuOpen(false); }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Browse All Products
+          </div></li>
+          {!user && (
+            <li><a href="#admin-login" onClick={(e) => { e.preventDefault(); navigate('admin-login'); setMobileMenuOpen(false); }} style={{ color: 'var(--danger)' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Admin Portal
+            </a></li>
+          )}
+        </ul>
+      </div>
 
       {/* Main Content */}
       <main className="main-content" style={{ maxWidth: '1400px' }}>
