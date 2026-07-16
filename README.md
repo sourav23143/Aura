@@ -522,7 +522,6 @@ No additional GitHub Actions configuration needed.
 
 <div align="center">
 
-Built with ❤️ for educational institutions everywhere.
 
 **[Report Bug](https://github.com/sourav23143/Aura/issues)** • **[Request Feature](https://github.com/sourav23143/Aura/issues)**
 
