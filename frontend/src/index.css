@@ -15,8 +15,8 @@
   --bg-secondary: #f9f9f9;
   
   /* Brand Accents - Clean Solid Colors */
-  --primary: #4f46e5; /* Premium SaaS Indigo */
-  --primary-hover: #4338ca;
+  --primary: #10b981; /* Premium Emerald Green */
+  --primary-hover: #059669;
   --success: #00a843; 
   --warning: #f59e0b;
   --danger: #ef4444;
@@ -28,7 +28,7 @@
 
   /* Borders - Hairline */
   --border-subtle: #eaeaea; 
-  --border-focus: #4f46e5; 
+  --border-focus: #10b981; 
 
   /* Spacing */
   --space-xs: 0.25rem;
