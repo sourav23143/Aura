@@ -1,5 +1,5 @@
 // Environment-aware configurations
-const API_URL = import.meta.env.VITE_API_URL || CONFIG.API_URL;
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Convert http/https API URL to ws/wss URL dynamically
 const getWsUrl = (sessionId) => {
