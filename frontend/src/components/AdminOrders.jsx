@@ -11,7 +11,7 @@ const AdminOrders = () => {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('CONFIG.API_URL/api/orders/all');
+      const res = await fetch(`${CONFIG.API_URL}/api/orders/all`);
       const data = await res.json();
       setOrders(data);
     } catch (err) {
@@ -22,7 +22,7 @@ const AdminOrders = () => {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await fetch(`CONFIG.API_URL/api/orders/${orderId}/status`, {
+      await fetch(`${CONFIG.API_URL}/api/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })

@@ -18,7 +18,7 @@ export default function Recommend() {
   const [productsDb, setProductsDb] = useState([]);
 
   useEffect(() => {
-    fetch('CONFIG.API_URL/api/documents/')
+    fetch(`${CONFIG.API_URL}/api/documents/`)
       .then(res => res.json())
       .then(data => {
         if (!data.documents) throw new Error("No documents returned");
@@ -91,7 +91,7 @@ export default function Recommend() {
         return acc + (dbProduct ? dbProduct.price_usd : 0);
       }, 0) || 0;
 
-      const res = await fetch('CONFIG.API_URL/api/quotes/generate', {
+      const res = await fetch(`${CONFIG.API_URL}/api/quotes/generate`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -30,7 +30,7 @@ function App() {
 
   // Fetch catalog for global autocomplete
   useEffect(() => {
-    fetch('CONFIG.API_URL/api/documents/')
+    fetch(`${CONFIG.API_URL}/api/documents/`)
       .then(res => res.json())
       .then(data => {
         if (!data.documents) return;

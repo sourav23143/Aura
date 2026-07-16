@@ -21,7 +21,7 @@ export default function Chat() {
   const [productsDb, setProductsDb] = useState([]);
 
   useEffect(() => {
-    fetch('CONFIG.API_URL/api/documents/')
+    fetch(`${CONFIG.API_URL}/api/documents/`)
       .then(res => res.json())
       .then(data => {
         if (!data.documents) return;
@@ -62,7 +62,7 @@ export default function Chat() {
     if (!ws.isStreaming && messages.length > 0) {
       const lastMsg = messages[messages.length - 1];
       if (lastMsg.role === 'assistant') {
-        fetch('CONFIG.API_URL/api/chat/suggestions', {
+        fetch(`${CONFIG.API_URL}/api/chat/suggestions`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ last_message: lastMsg.content })
@@ -86,7 +86,7 @@ export default function Chat() {
     if (input.trim().length < 3) return;
     
     const timeoutId = setTimeout(() => {
-      fetch('CONFIG.API_URL/api/chat/autocomplete', {
+      fetch(`${CONFIG.API_URL}/api/chat/autocomplete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: input })

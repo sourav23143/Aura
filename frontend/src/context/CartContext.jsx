@@ -11,7 +11,7 @@ export function CartProvider({ children }) {
   const addToCart = (item) => {
     // Track interaction for collaborative filtering
     if (user && item.id) {
-      fetch('CONFIG.API_URL/api/recommend/interaction', {
+      fetch(`${CONFIG.API_URL}/api/recommend/interaction`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

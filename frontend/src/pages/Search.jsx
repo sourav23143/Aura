@@ -42,7 +42,7 @@ export default function Search({ initialQuery = '' }) {
 
   const fetchAllProducts = () => {
     setLoading(true);
-    fetch('CONFIG.API_URL/api/documents/')
+    fetch(`${CONFIG.API_URL}/api/documents/`)
       .then(res => res.json())
       .then(data => {
         if (!data.documents) throw new Error("No documents returned");
@@ -118,7 +118,7 @@ export default function Search({ initialQuery = '' }) {
     }
     
     try {
-      const res = await fetch('CONFIG.API_URL/api/reviews/', {
+      const res = await fetch(`${CONFIG.API_URL}/api/reviews/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -44,7 +44,7 @@ export default function Account({ onNavigate }) {
       
       const token = localStorage.getItem('token');
       // Fetch Orders
-      fetch('CONFIG.API_URL/api/orders/history', {
+      fetch(`${CONFIG.API_URL}/api/orders/history`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.json())
@@ -52,7 +52,7 @@ export default function Account({ onNavigate }) {
       .catch(console.error);
 
       // Fetch Quotes
-      fetch('CONFIG.API_URL/api/quotes/list', {
+      fetch(`${CONFIG.API_URL}/api/quotes/list`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       .then(res => res.json())
@@ -63,7 +63,7 @@ export default function Account({ onNavigate }) {
 
   const saveProfile = async () => {
     const token = localStorage.getItem('token');
-    const res = await fetch('CONFIG.API_URL/api/auth/profile', {
+    const res = await fetch(`${CONFIG.API_URL}/api/auth/profile`, {
       method: 'PUT',
       headers: { 
         'Authorization': `Bearer ${token}`,
@@ -87,7 +87,7 @@ export default function Account({ onNavigate }) {
 
   const saveSettings = async () => {
     const token = localStorage.getItem('token');
-    const res = await fetch('CONFIG.API_URL/api/auth/settings', {
+    const res = await fetch(`${CONFIG.API_URL}/api/auth/settings`, {
       method: 'PUT',
       headers: { 
         'Authorization': `Bearer ${token}`,
@@ -290,7 +290,7 @@ export default function Account({ onNavigate }) {
                       if (window.confirm('Are you sure you want to completely delete your account? This action cannot be undone.')) {
                         const token = localStorage.getItem('token');
                         try {
-                          const res = await fetch('CONFIG.API_URL/api/auth/me', {
+                          const res = await fetch(`${CONFIG.API_URL}/api/auth/me`, {
                             method: 'DELETE',
                             headers: { 'Authorization': `Bearer ${token}` }
                           });

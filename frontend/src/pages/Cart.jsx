@@ -24,7 +24,7 @@ export default function Cart({ onNavigate }) {
         }))
       };
 
-      const res = await fetch('CONFIG.API_URL/api/orders/checkout', {
+      const res = await fetch(`${CONFIG.API_URL}/api/orders/checkout`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

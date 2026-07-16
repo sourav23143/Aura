@@ -40,7 +40,7 @@ const AdminReviews = () => {
 
   const fetchProductStats = async () => {
     try {
-      const res = await fetch('CONFIG.API_URL/api/reviews/product-stats');
+      const res = await fetch(`${CONFIG.API_URL}/api/reviews/product-stats`);
       const data = await res.json();
       setProductStats(data);
     } catch (err) { console.error(err); }
@@ -49,7 +49,7 @@ const AdminReviews = () => {
 
   const fetchGlobalAnalytics = async () => {
     try {
-      const res = await fetch('CONFIG.API_URL/api/reviews/analytics/global');
+      const res = await fetch(`${CONFIG.API_URL}/api/reviews/analytics/global`);
       const data = await res.json();
       setGlobalAnalytics(data);
     } catch (err) { console.error(err); }
@@ -60,8 +60,8 @@ const AdminReviews = () => {
     setLoadingKeywords(true);
     try {
       const [negRes, posRes] = await Promise.all([
-        fetch('CONFIG.API_URL/api/reviews/analytics/keyword-extraction?sentiment=NEGATIVE'),
-        fetch('CONFIG.API_URL/api/reviews/analytics/keyword-extraction?sentiment=POSITIVE'),
+        fetch(`${CONFIG.API_URL}/api/reviews/analytics/keyword-extraction?sentiment=NEGATIVE`),
+        fetch(`${CONFIG.API_URL}/api/reviews/analytics/keyword-extraction?sentiment=POSITIVE`),
       ]);
       const negData = await negRes.json();
       const posData = await posRes.json();
@@ -76,7 +76,7 @@ const AdminReviews = () => {
     setLoadingReviews(true);
     setAiSummary(null);
     try {
-      const res = await fetch(`CONFIG.API_URL/api/reviews/${product.product_id}`);
+      const res = await fetch(`${CONFIG.API_URL}/api/reviews/${product.product_id}`);
       const data = await res.json();
       setProductReviews(data);
     } catch (err) { console.error(err); }
@@ -86,7 +86,7 @@ const AdminReviews = () => {
   const fetchAiSummary = async () => {
     setLoadingAiSummary(true);
     try {
-      const res = await fetch(`CONFIG.API_URL/api/reviews/${selectedProduct.product_id}/ai-summary`);
+      const res = await fetch(`${CONFIG.API_URL}/api/reviews/${selectedProduct.product_id}/ai-summary`);
       const data = await res.json();
       setAiSummary(data);
     } catch (err) {

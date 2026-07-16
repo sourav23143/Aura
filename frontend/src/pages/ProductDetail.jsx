@@ -19,7 +19,7 @@ function ProductDetail({ productId, onNavigate }) {
     if (!productId) return;
     
     // Fetch product details
-    fetch(`CONFIG.API_URL/api/documents/${productId}`)
+    fetch(`${CONFIG.API_URL}/api/documents/${productId}`)
       .then(res => res.json())
       .then(data => {
         let meta = {};
@@ -31,7 +31,7 @@ function ProductDetail({ productId, onNavigate }) {
       .catch(err => console.error("Error fetching product:", err));
 
     // Fetch product reviews
-    fetch(`CONFIG.API_URL/api/reviews/${productId}`)
+    fetch(`${CONFIG.API_URL}/api/reviews/${productId}`)
       .then(res => res.json())
       .then(data => {
         setReviews(data);
@@ -53,7 +53,7 @@ function ProductDetail({ productId, onNavigate }) {
     
     setIsSubmitting(true);
     try {
-      const response = await fetch('CONFIG.API_URL/api/reviews/', {
+      const response = await fetch(`${CONFIG.API_URL}/api/reviews/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -77,7 +77,7 @@ function ProductDetail({ productId, onNavigate }) {
   const handleDeleteReview = async (reviewId) => {
     if (!window.confirm("Are you sure you want to delete this review?")) return;
     try {
-      const response = await fetch(`CONFIG.API_URL/api/reviews/${reviewId}?user_email=${encodeURIComponent(user.email)}`, {
+      const response = await fetch(`${CONFIG.API_URL}/api/reviews/${reviewId}?user_email=${encodeURIComponent(user.email)}`, {
         method: 'DELETE',
       });
       if (response.ok) {

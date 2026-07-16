@@ -35,7 +35,7 @@ export default function Home({ onNavigate }) {
     }
     
     try {
-      const res = await fetch('CONFIG.API_URL/api/reviews/', {
+      const res = await fetch(`${CONFIG.API_URL}/api/reviews/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -85,7 +85,7 @@ export default function Home({ onNavigate }) {
   ];
 
   useEffect(() => {
-    fetch('CONFIG.API_URL/api/documents/')
+    fetch(`${CONFIG.API_URL}/api/documents/`)
       .then(res => res.json())
       .then(data => {
         if (!data.documents) throw new Error("No documents returned");
@@ -140,7 +140,7 @@ export default function Home({ onNavigate }) {
           <p style={{ fontSize: '1.1rem', color: '#cbd5e1', marginBottom: '2rem', lineHeight: '1.6' }}>
             {slides[currentSlide].desc}
           </p>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div className="hero-buttons" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             <button className="btn btn-primary" onClick={() => onNavigate('search')}>Shop Infrastructure</button>
             <button className="btn btn-secondary glass-effect" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }} onClick={() => onNavigate('recommend')}>Use AI Planner</button>
           </div>

@@ -15,7 +15,7 @@ const AdminInventory = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await fetch('CONFIG.API_URL/api/documents/?limit=100');
+      const res = await fetch(`${CONFIG.API_URL}/api/documents/?limit=100`);
       const data = await res.json();
       setProducts(data.documents || []);
     } catch (err) {
@@ -27,7 +27,7 @@ const AdminInventory = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
     try {
-      await fetch(`CONFIG.API_URL/api/documents/${id}`, { method: 'DELETE' });
+      await fetch(`${CONFIG.API_URL}/api/documents/${id}`, { method: 'DELETE' });
       fetchProducts();
     } catch (err) {
       console.error(err);
@@ -73,7 +73,7 @@ const AdminInventory = () => {
 
     try {
       if (isCreating) {
-        const res = await fetch('CONFIG.API_URL/api/documents/', {
+        const res = await fetch(`${CONFIG.API_URL}/api/documents/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -84,7 +84,7 @@ const AdminInventory = () => {
           return;
         }
       } else {
-        const res = await fetch(`CONFIG.API_URL/api/documents/${editingProduct.id}`, {
+        const res = await fetch(`${CONFIG.API_URL}/api/documents/${editingProduct.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
