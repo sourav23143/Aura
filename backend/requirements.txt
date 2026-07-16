@@ -22,6 +22,7 @@ langgraph>=0.2.60
 
 # Vector DB & Embeddings
 chromadb>=0.5.23
+langchain-postgres>=0.0.12
 
 # Streaming
 sse-starlette>=2.2.1
