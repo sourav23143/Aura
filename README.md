@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 # 🧠 Aura AI Hub
 
@@ -78,6 +78,72 @@ SQLite / PostgreSQL      ChromaDB
 (Orders, Users,        (384-dim embeddings
  Reviews, Products)     Cosine Similarity)
 ```
+
+---
+
+## 📸 Application Screenshots
+
+> All screenshots were captured live from the running application.
+
+### 🏠 Homepage — Hero Section
+![Homepage Hero](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/01_homepage_hero.png)
+
+### 📂 Homepage — Category Navigation
+![Homepage Categories](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/02_homepage_categories.png)
+
+### 🛍️ Homepage — Featured Products
+![Homepage Featured](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/03_homepage_featured.png)
+
+### 🔍 Semantic Search — Results Page
+![Search Results](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/04_search_results.png)
+
+### 🔍 Semantic Search — Product Cards
+![Search Cards](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/05_search_results_cards.png)
+
+### 🤖 AI Setup Planner — Step 1 (Requirements)
+![AI Planner Step 1](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/06_ai_planner_step1.png)
+
+### 🤖 AI Setup Planner — Step 2 (Budget & Priorities)
+![AI Planner Step 2](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/07_ai_planner_step2.png)
+
+### 📋 AI Setup Planner — Generated Proposal
+![AI Proposal](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/08_ai_planner_proposal.png)
+
+### 📋 AI Setup Planner — Proposal Results (Scrolled)
+![AI Proposal Results](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/09_ai_planner_proposal_results.png)
+
+### 💬 AI Sales Consultant — Chatbot Interface
+![Chatbot Page](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/10_chatbot_page.png)
+
+### 💬 AI Sales Consultant — Live Response Streaming
+![Chatbot Response](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/11_chatbot_response.png)
+
+### 🛒 Shopping Cart
+![Cart Page](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/12_cart_page.png)
+
+### 🔐 Admin Dashboard — Overview
+![Admin Dashboard](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/13_admin_dashboard.png)
+
+### 📦 Admin Dashboard — Inventory Management
+![Admin Inventory](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/14_admin_inventory.png)
+
+### 📊 Admin Dashboard — AI Analytics (NL2SQL)
+![Admin Analytics](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/15_admin_analytics.png)
+
+### ⭐ Admin Dashboard — Sentiment & Reviews
+![Admin Reviews](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/16_admin_reviews.png)
+
+### 📦 Admin Dashboard — Order Management
+![Admin Orders](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/17_admin_orders.png)
+
+### 📖 Swagger API Documentation
+![API Docs](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/18_api_docs.png)
+
+### 📖 API Endpoints Overview
+![API Endpoints](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/19_api_docs_endpoints.png)
+
+### 🔑 Login Page
+![Login Page](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/20_login_page.png)
 
 ---
 
