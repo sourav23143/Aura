@@ -14,21 +14,21 @@
   --bg-card: #ffffff;
   --bg-secondary: #f9f9f9;
   
-  /* Brand Accents */
-  --primary: #0073e6; /* Vivid Blue from screenshot */
-  --primary-hover: #005bb5;
-  --success: #00a843; /* Green stock status */
+  /* Brand Accents - Clean Solid Colors */
+  --primary: #000000; 
+  --primary-hover: #333333;
+  --success: #00a843; 
   --warning: #f59e0b;
   --danger: #ef4444;
 
-  /* Text */
-  --text-primary: #111111; 
+  /* Text - High Contrast */
+  --text-primary: #000000; 
   --text-secondary: #555555; 
   --text-muted: #888888; 
 
-  /* Borders */
-  --border-subtle: #e5e5e5; 
-  --border-focus: #93c5fd; 
+  /* Borders - Hairline */
+  --border-subtle: #eaeaea; 
+  --border-focus: #000000; 
 
   /* Spacing */
   --space-xs: 0.25rem;
@@ -40,7 +40,7 @@
   --space-3xl: 4rem;
 
   /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
@@ -53,13 +53,13 @@
 
   /* Radius */
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
   --radius-full: 9999px;
 
-  /* Premium Shadows */
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  /* Premium Shadows - Extremely Subtle */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
 
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -113,7 +113,9 @@ h1, h2, h3, h4, h5, h6 {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border-subtle);
   padding: 0 var(--space-lg);
 }
@@ -201,9 +203,15 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: var(--space-md);
+  padding: var(--space-lg);
   display: flex;
   flex-direction: column;
+  transition: all var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #000000;
 }
 
 /* ─── Buttons ─────────────────────────────────── */
@@ -212,9 +220,9 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: var(--radius-sm);
+  padding: 0.6rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   font-weight: 500;
@@ -235,11 +243,12 @@ h1, h2, h3, h4, h5, h6 {
 .btn-secondary {
   background: #ffffff;
   color: var(--text-primary);
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-subtle);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: #f3f4f6;
+  background: var(--bg-secondary);
+  border-color: #000000;
 }
 
 /* ─── Input / Search ──────────────────────────── */
