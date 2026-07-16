@@ -122,27 +122,24 @@ export default function Home({ onNavigate }) {
 
   return (
     <div>
-      {/* Hybrid Minimalist Hero Banner */}
+      {/* Hyper-Premium Glassmorphism Hero Banner */}
       <section 
         className="hero-banner"
-        style={{ backgroundImage: `url(${slides[currentSlide].img})`, padding: '6rem 4rem', borderRadius: 'var(--radius-lg)', margin: 'var(--space-md)' }}
+        style={{ backgroundImage: `url(${slides[currentSlide].img})`, padding: '8rem 2rem', borderRadius: 'var(--radius-lg)', margin: 'var(--space-md)', backgroundAttachment: 'fixed' }}
       >
-        {/* Soft, clean overlay */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 100%)', zIndex: 1, borderRadius: 'var(--radius-lg)' }}></div>
-
-        <div className="hero-banner-content" style={{ zIndex: 2, position: 'relative' }}>
-          <span style={{ display: 'inline-block', padding: '6px 16px', background: '#ffffff', color: '#000000', borderRadius: '9999px', fontSize: '0.85rem', fontWeight: 600, marginBottom: '1.5rem', border: '1px solid #eaeaea' }}>
+        <div className="glass-panel" style={{ maxWidth: '800px', margin: '0 auto', padding: '3rem', borderRadius: 'var(--radius-lg)', textAlign: 'center', position: 'relative', zIndex: 2 }}>
+          <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.8)', color: '#000', borderRadius: '9999px', fontSize: '0.85rem', fontWeight: 700, marginBottom: '1.5rem', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
             {slides[currentSlide].badge}
           </span>
-          <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 800, letterSpacing: '-0.04em', color: '#ffffff', marginBottom: '1.5rem', lineHeight: 1.1 }}>
+          <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', fontWeight: 800, letterSpacing: '-0.03em', color: '#000', marginBottom: '1.5rem', lineHeight: 1.1, textShadow: '0 2px 10px rgba(255,255,255,0.5)' }}>
             {slides[currentSlide].title}
           </h1>
-          <p style={{ fontSize: '1.15rem', color: '#eaeaea', marginBottom: '2.5rem', lineHeight: '1.6', maxWidth: '500px' }}>
+          <p style={{ fontSize: '1.2rem', color: '#333', marginBottom: '2.5rem', lineHeight: '1.6', fontWeight: 500 }}>
             {slides[currentSlide].desc}
           </p>
-          <div className="hero-buttons" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <button className="btn btn-primary" onClick={() => onNavigate('search')} style={{ background: '#ffffff', color: '#000000' }}>Shop Infrastructure</button>
-            <button className="btn btn-secondary" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }} onClick={() => onNavigate('recommend')}>Use AI Planner</button>
+          <div className="hero-buttons" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button className="btn btn-primary" onClick={() => onNavigate('search')}>Shop Infrastructure</button>
+            <button className="btn btn-secondary" onClick={() => onNavigate('recommend')}>Use AI Planner</button>
           </div>
           <div style={{ display: 'flex', gap: '8px', marginTop: '2rem' }}>
             {slides.map((_, i) => (
@@ -168,8 +165,8 @@ export default function Home({ onNavigate }) {
             { icon: <IconMicroscope size={32} color="var(--primary)" />, name: 'Science Labs', query: 'Infrastructure' },
             { icon: <IconBook size={32} color="var(--primary)" />, name: 'Library Systems', query: 'Library' }
           ].map((cat, i) => (
-            <div key={i} onClick={() => onNavigate(`search?q=${encodeURIComponent(cat.query)}`)} style={{ cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s', padding: '1rem' }} onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.querySelector('.icon-circle').style.borderColor = '#000000'; e.currentTarget.querySelector('.icon-circle').style.boxShadow = '0 8px 30px rgba(0,0,0,0.08)'; }} onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.querySelector('.icon-circle').style.borderColor = '#eaeaea'; e.currentTarget.querySelector('.icon-circle').style.boxShadow = 'none'; }}>
-              <div className="icon-circle" style={{ width: '80px', height: '80px', margin: '0 auto var(--space-md)', background: '#ffffff', border: '1px solid #eaeaea', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', transition: 'all 0.2s' }}>
+            <div key={i} className="animate-float" onClick={() => onNavigate(`search?q=${encodeURIComponent(cat.query)}`)} style={{ cursor: 'pointer', textAlign: 'center', transition: 'all 0.3s', padding: '1rem', animationDelay: `${i * 0.2}s` }} onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-10px) scale(1.05)'; e.currentTarget.querySelector('.icon-circle').style.borderColor = 'rgba(99,102,241,0.5)'; e.currentTarget.querySelector('.icon-circle').style.boxShadow = '0 10px 40px rgba(99, 102, 241, 0.2)'; }} onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.querySelector('.icon-circle').style.borderColor = '#eaeaea'; e.currentTarget.querySelector('.icon-circle').style.boxShadow = 'none'; }}>
+              <div className="icon-circle" style={{ width: '80px', height: '80px', margin: '0 auto var(--space-md)', background: '#ffffff', border: '1px solid #eaeaea', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', transition: 'all 0.3s' }}>
                 {cat.icon}
               </div>
               <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#111111' }}>{cat.name}</span>
