@@ -140,7 +140,7 @@ export default function Home({ onNavigate }) {
           <p style={{ fontSize: '1.1rem', color: '#cbd5e1', marginBottom: '2rem', lineHeight: '1.6' }}>
             {slides[currentSlide].desc}
           </p>
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             <button className="btn btn-primary" onClick={() => onNavigate('search')}>Shop Infrastructure</button>
             <button className="btn btn-secondary glass-effect" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }} onClick={() => onNavigate('recommend')}>Use AI Planner</button>
           </div>
@@ -159,7 +159,7 @@ export default function Home({ onNavigate }) {
       {/* Shop by Category */}
       <section style={{ marginBottom: 'var(--space-3xl)' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: 'var(--space-lg)' }}>Shop by Category</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 'var(--space-md)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 'var(--space-md)' }}>
           {[
             { icon: <IconLaptop size={32} color="var(--primary)" />, name: 'Smart Classrooms', query: 'Smart Infrastructure' },
             { icon: <IconBot size={32} color="var(--primary)" />, name: 'STEM Robotics', query: 'STEM' },
@@ -180,7 +180,7 @@ export default function Home({ onNavigate }) {
 
       {/* Featured Products Grid */}
       <section style={{ marginBottom: 'var(--space-3xl)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 'var(--space-xl)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 'var(--space-xl)', flexWrap: 'wrap', gap: '0.5rem' }}>
           <h2 style={{ fontSize: '1.5rem' }}>Featured Products for Institutions</h2>
           <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('search'); }} style={{ fontSize: '0.9rem', fontWeight: 600 }}>See all recommendations →</a>
         </div>
