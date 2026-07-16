@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from pydantic import BaseModel, EmailStr
 import bcrypt
-import jwt
+from jose import jwt
 from datetime import datetime, timedelta, timezone
 
 from app.db.session import get_db
