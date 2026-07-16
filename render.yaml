@@ -21,5 +21,7 @@ services:
         value: sentence-transformers/all-MiniLM-L6-v2
       - key: APP_ENV
         value: production
+      - key: USE_LOCAL_EMBEDDINGS
+        value: "False"
       - key: CORS_ORIGINS
         value: "https://cortex-ai-frontend.vercel.app" # Will need to be updated with actual frontend URL
