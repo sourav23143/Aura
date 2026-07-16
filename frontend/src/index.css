@@ -954,6 +954,14 @@ h1, h2, h3, h4, h5, h6 {
   .hero-banner p {
     font-size: 0.9rem;
   }
+  .hero-buttons {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  .hero-buttons .btn {
+    width: 100%;
+    justify-content: center;
+  }
 
   /* Chat */
   .chat-layout {
@@ -1075,6 +1083,14 @@ h1, h2, h3, h4, h5, h6 {
   .hero-banner p {
     font-size: 0.85rem;
     line-height: 1.4;
+  }
+  .hero-buttons {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  .hero-buttons .btn {
+    width: 100%;
+    justify-content: center;
   }
 
   /* Section headers */
