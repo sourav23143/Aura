@@ -14,10 +14,11 @@
   --bg-card: #ffffff;
   --bg-secondary: #f9f9f9;
   
-  /* Brand Accents - Clean Solid Colors */
-  --primary: #0f172a; /* Deep Slate (Premium Minimalist) */
-  --primary-hover: #1e293b;
-  --success: #00a843; 
+  /* Brand Accents - Beautiful Vibrant Gradients */
+  --primary: #8b5cf6; /* Vibrant Violet */
+  --primary-hover: #7c3aed;
+  --primary-gradient: linear-gradient(135deg, #6366f1, #d946ef); /* Indigo to Fuchsia */
+  --success: #10b981; 
   --warning: #f59e0b;
   --danger: #ef4444;
 
@@ -28,7 +29,7 @@
 
   /* Borders - Hairline */
   --border-subtle: #eaeaea; 
-  --border-focus: #0f172a; 
+  --border-focus: #8b5cf6; 
 
   /* Spacing */
   --space-xs: 0.25rem;
@@ -57,9 +58,9 @@
   --radius-lg: 16px;
   --radius-full: 9999px;
 
-  /* Premium Shadows - Extremely Subtle */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
+  /* Premium Shadows - Beautiful & Soft */
+  --shadow-sm: 0 2px 4px rgba(99, 102, 241, 0.05);
+  --shadow-md: 0 10px 40px rgba(99, 102, 241, 0.12);
 
   /* Transitions */
   --transition-fast: 150ms ease;
@@ -211,7 +212,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .card:hover {
   box-shadow: var(--shadow-md);
-  border-color: var(--primary);
+  border-color: rgba(99, 102, 241, 0.3);
+  transform: translateY(-2px);
 }
 
 /* ─── Buttons ─────────────────────────────────── */
@@ -232,24 +234,30 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: var(--primary-gradient);
   color: white;
+  border: none;
+  box-shadow: 0 4px 15px rgba(217, 70, 239, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
+  background: linear-gradient(135deg, #4f46e5, #c026d3);
+  box-shadow: 0 6px 20px rgba(217, 70, 239, 0.4);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.8);
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(8px);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: var(--bg-secondary);
-  border-color: var(--primary);
-  color: var(--primary);
+  background: #ffffff;
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #6366f1;
+  box-shadow: var(--shadow-sm);
 }
 
 /* ─── Input / Search ──────────────────────────── */
