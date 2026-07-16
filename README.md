@@ -13,6 +13,14 @@
 
 *A production-grade, AI-first B2B SaaS platform purpose-built for schools, colleges, and universities to intelligently discover, plan, and procure educational infrastructure.*
 
+<br/>
+
+### 🌍 Live Application Links
+
+**🚀 Frontend (Live App):** [https://aura-ten-sooty.vercel.app/](https://aura-ten-sooty.vercel.app/)  
+**⚙️ Backend API:** [https://cortex-ai-backend-ia83.onrender.com/docs](https://cortex-ai-backend-ia83.onrender.com/docs)  
+**🗄️ Database:** Hosted on Supabase (PostgreSQL)
+
 </div>
 
 ---
@@ -44,6 +52,7 @@
 - **An AI Planner** that generates budget-conscious procurement proposals from a plain-English description
 - **A real-time AI chatbot** (WebSocket-powered) that acts as a knowledgeable sales engineer, 24/7
 - **An Admin Portal** with AI-powered NL2SQL analytics and automated sentiment analysis
+- **Fully Responsive Design** that works seamlessly across desktop, tablet, and mobile devices
 
 ---
 
@@ -73,7 +82,7 @@
    ┌───────────┴────────────┐
    │                        │
    ▼                        ▼
-SQLite / PostgreSQL      ChromaDB
+Supabase PostgreSQL      ChromaDB
 (Relational Data)      (Vector Store)
 (Orders, Users,        (384-dim embeddings
  Reviews, Products)     Cosine Similarity)
@@ -97,26 +106,14 @@ SQLite / PostgreSQL      ChromaDB
 ### 🔍 Semantic Search — Results Page
 ![Search Results](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/04_search_results.png)
 
-### 🔍 Semantic Search — Product Cards
-![Search Cards](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/05_search_results_cards.png)
-
 ### 🤖 AI Setup Planner — Step 1 (Requirements)
 ![AI Planner Step 1](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/06_ai_planner_step1.png)
-
-### 🤖 AI Setup Planner — Step 2 (Budget & Priorities)
-![AI Planner Step 2](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/07_ai_planner_step2.png)
 
 ### 📋 AI Setup Planner — Generated Proposal
 ![AI Proposal](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/08_ai_planner_proposal.png)
 
-### 📋 AI Setup Planner — Proposal Results (Scrolled)
-![AI Proposal Results](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/09_ai_planner_proposal_results.png)
-
 ### 💬 AI Sales Consultant — Chatbot Interface
 ![Chatbot Page](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/10_chatbot_page.png)
-
-### 💬 AI Sales Consultant — Live Response Streaming
-![Chatbot Response](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/11_chatbot_response.png)
 
 ### 🛒 Shopping Cart
 ![Cart Page](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/12_cart_page.png)
@@ -124,26 +121,11 @@ SQLite / PostgreSQL      ChromaDB
 ### 🔐 Admin Dashboard — Overview
 ![Admin Dashboard](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/13_admin_dashboard.png)
 
-### 📦 Admin Dashboard — Inventory Management
-![Admin Inventory](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/14_admin_inventory.png)
-
 ### 📊 Admin Dashboard — AI Analytics (NL2SQL)
 ![Admin Analytics](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/15_admin_analytics.png)
 
-### ⭐ Admin Dashboard — Sentiment & Reviews
-![Admin Reviews](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/16_admin_reviews.png)
-
-### 📦 Admin Dashboard — Order Management
-![Admin Orders](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/17_admin_orders.png)
-
-### 📖 Swagger API Documentation
-![API Docs](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/18_api_docs.png)
-
 ### 📖 API Endpoints Overview
 ![API Endpoints](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/19_api_docs_endpoints.png)
-
-### 🔑 Login Page
-![Login Page](https://raw.githubusercontent.com/sourav23143/Aura/main/docs/screenshots/20_login_page.png)
 
 ---
 
@@ -179,6 +161,7 @@ SQLite / PostgreSQL      ChromaDB
 | **State** | React Context API | Cart and Auth global state |
 | **HTTP** | Fetch API | REST API calls |
 | **Real-time** | WebSocket API | Chat streaming |
+| **Styling** | Vanilla CSS | Custom responsive design system |
 
 ---
 
@@ -201,36 +184,6 @@ SQLite / PostgreSQL      ChromaDB
 | `reviews` | Product reviews with auto-sentiment labels |
 | `user_interactions` | Behavioral data for collaborative filtering |
 
-### Key Model: `Document` (Products)
-
-```python
-class Document(Base):
-    id            = Column(String, primary_key=True)
-    title         = Column(String(500), nullable=False)
-    content       = Column(Text, nullable=False)
-    category      = Column(String(100), nullable=False)
-    subcategory   = Column(String(100), nullable=True)
-    tags          = Column(JSON)           # ["STEM", "lab", "science"]
-    metadata_json = Column(JSON)           # price, brand, specs, compliance
-    embedding     = Column(Vector(384))    # SentenceTransformer vector
-    is_embedded   = Column(Boolean, default=False)
-    created_at    = Column(DateTime)
-```
-
-### Key Model: `Review` (with Sentiment)
-
-```python
-class Review(Base):
-    id              = Column(String, primary_key=True)
-    product_id      = Column(String, ForeignKey("documents.id"))
-    user_email      = Column(String(150))
-    rating          = Column(Integer)     # 1 to 5 stars
-    content         = Column(Text)
-    sentiment       = Column(String(50))  # POSITIVE / NEGATIVE / NEUTRAL
-    sentiment_score = Column(Float)       # Confidence: 0.0 to 1.0
-    created_at      = Column(DateTime)
-```
-
 ---
 
 ## ✨ Feature Explanations (with How They Work)
@@ -239,9 +192,9 @@ class Review(Base):
 
 The homepage serves as the primary entry point with:
 - **Promotional banner** for B2B deals
-- **Hero carousel** cycling through 3 marketing slides
+- **Hero carousel** cycling through marketing slides
 - **Category grid** with visual shortcuts (Smart Classrooms, STEM Robotics, AR/VR Labs, School Software, Science Labs, Library Systems)
-- **Featured Products** section
+- **Fully Responsive Navigation** including a mobile hamburger menu
 
 ### 2. AI-Powered Semantic Search
 
@@ -262,16 +215,12 @@ Groq LLM generates 2-3 sentence "AI Insight" summary
 Frontend renders product cards + AI summary
 ```
 
-Why it's better than keyword search: "interactive panels", "smart boards", and "digital whiteboards" all return the same semantically relevant results.
-
 ### 3. AI Setup Planner (Recommendations)
 
 A 3-step wizard:
 1. **Requirements Input** — Admin describes needs in plain English
-2. **Budget & Priorities** — Max budget + NEP 2020 compliance priorities  
+2. **Budget & Priorities** — Max budget + compliance priorities  
 3. **AI Generation** — LLM generates itemized procurement proposal within budget
-
-**How:** Backend fetches 10 relevant products via RAG, then Groq generates a structured JSON proposal with recommended items, quantities, justifications, and cost breakdown.
 
 ### 4. AI Sales Consultant (Chatbot)
 
@@ -285,63 +234,20 @@ Frontend opens ws://backend/api/chat/ws/{session_id}
     └── Sends: {"type": "done"}
 ```
 
-**Extra Features:**
-- **Autocomplete** — Predicts full questions as user types
-- **Suggestions** — Generates 3 follow-up questions after each AI response
-- **Memory** — Loads last 10 messages for context-aware conversations
-
-### 5. Shopping Cart & Procurement
-
-- State managed via React Context API + localStorage persistence
-- Checkout creates `Order` + `OrderItem` records via REST API
-
-### 6. Admin Dashboard
+### 5. Admin Dashboard
 
 Secure multi-tab portal:
 - **Overview** — Key platform stats
 - **Inventory** — Full product CRUD
-- **AI Analytics** — NL2SQL query interface  
-- **Sentiment & Reviews** — NLP-analyzed review dashboard
+- **AI Analytics** — NL2SQL query interface (translates English to safe SQL)
+- **Sentiment & Reviews** — NLP-analyzed review dashboard using HuggingFace DistilBERT
 - **Order Management** — Full order lifecycle tracking
-
-### 7. AI Analytics (NL2SQL)
-
-```
-Admin asks: "Show top 5 products by order volume this month"
-    │
-    ▼
-Groq LLM + DB schema → generates safe SELECT SQL
-    │
-    ▼
-Safety check (no DROP/DELETE/UPDATE allowed)
-    │
-    ▼
-SQLAlchemy executes → results rendered in data table
-```
-
-### 8. Sentiment Analysis & Reviews
-
-Every review is automatically classified using a HuggingFace DistilBERT model:
-```python
-result = pipeline("sentiment-analysis")("Amazing product!")
-# → {"label": "POSITIVE", "score": 0.9998}
-```
-The admin dashboard shows aggregated sentiment distribution (% Positive / Neutral / Negative).
-
-### 9. Authentication & Authorization
-
-```
-Registration: Password bcrypt-hashed → stored in DB
-Login: Password verified → JWT token generated (HS256)
-Protected routes: JWT in Authorization: Bearer header
-Admin routes: Additional role check (role == "admin")
-```
 
 ---
 
 ## 📡 API Reference
 
-Full interactive docs: `http://localhost:8000/docs`
+Full interactive docs: `https://cortex-ai-backend-ia83.onrender.com/docs`
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
@@ -357,109 +263,9 @@ Full interactive docs: `http://localhost:8000/docs`
 | PUT | `/api/documents/{id}` | Admin | Update product |
 | DELETE | `/api/documents/{id}` | Admin | Delete product |
 | GET | `/api/agents/logs` | Admin | Agent telemetry |
-| POST | `/api/auth/register` | No | User registration |
-| POST | `/api/auth/login` | No | Login → JWT token |
 | GET | `/api/orders/` | Admin | List all orders |
-| POST | `/api/orders/` | Yes | Create order |
 | POST | `/api/analytics/nl2sql` | Admin | NL to SQL query |
 | GET | `/api/reviews/` | Admin | Reviews + sentiment |
-| POST | `/api/reviews/` | Yes | Submit review |
-
----
-
-## 🤖 AI/ML Pipeline Deep Dive
-
-### RAG Pipeline
-
-```python
-# 1. Encode user query
-query_embedding = embedding_model.encode(query)  # 384-dim
-
-# 2. Vector search in ChromaDB
-results = chroma_collection.query(query_embeddings=[query_embedding], n_results=5)
-
-# 3. Build grounded prompt
-context = "\n\n".join(results["documents"][0])
-prompt = f"Context: {context}\n\nQuestion: {query}"
-
-# 4. LLM generates grounded answer
-response = await groq_llm.ainvoke(prompt)
-```
-
-### LangGraph Multi-Agent State Machine
-
-```
-User Message → Router Node (classifies intent)
-                    │
-         ┌──────────┼──────────┐
-         ▼          ▼          ▼
-     Search      Recommend   Chat
-     Agent       Agent       Agent
-     (ChromaDB   (RAG +      (Conversation
-      Semantic)   Proposal)   Memory RAG)
-         │          │          │
-         └──────────┼──────────┘
-                    ▼
-              Respond Node → Final answer
-```
-
-### NL2SQL Safety
-
-```python
-SAFE_KEYWORDS = ["select", "from", "where", "join", "group by", "order by", "limit"]
-FORBIDDEN = ["drop", "delete", "update", "insert", "alter", "truncate"]
-
-def validate_sql_safety(sql: str):
-    sql_lower = sql.lower()
-    for forbidden in FORBIDDEN:
-        if forbidden in sql_lower:
-            raise ValueError(f"Dangerous SQL keyword detected: {forbidden}")
-```
-
----
-
-## 📁 Project File Structure
-
-```
-cortex-ai/
-├── backend/
-│   ├── app/
-│   │   ├── config.py              # Pydantic Settings
-│   │   ├── main.py                # FastAPI app entry point
-│   │   ├── ai/
-│   │   │   ├── agents/graph.py    # LangGraph state machine
-│   │   │   ├── agents/nl2sql_agent.py  # NL2SQL agent
-│   │   │   ├── embeddings/vectorstore.py  # ChromaDB
-│   │   │   ├── rag/pipeline.py    # RAG chain
-│   │   │   └── recommendations/engine.py
-│   │   ├── api/
-│   │   │   ├── auth.py            # JWT auth
-│   │   │   ├── orders.py          # Orders CRUD
-│   │   │   └── routes/            # All API route handlers
-│   │   ├── db/
-│   │   │   ├── session.py         # SQLAlchemy engine
-│   │   │   ├── seed.py            # Product catalog seeding
-│   │   │   └── seed_reviews.py    # Review data seeding
-│   │   ├── models/__init__.py     # All ORM models
-│   │   └── schemas/__init__.py    # Pydantic schemas
-│   ├── requirements.txt
-│   ├── .env.example
-│   └── .env                       # (not in git)
-│
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx                # Main app + routing
-│   │   ├── config.js              # API URL config
-│   │   ├── components/            # 30+ reusable components
-│   │   ├── context/AuthContext.jsx
-│   │   ├── pages/                 # Page components
-│   │   └── services/api.js        # All API call functions
-│   ├── vercel.json                # Vercel SPA config
-│   └── package.json
-│
-├── render.yaml                    # Render.com IaC config
-└── README.md
-```
 
 ---
 
@@ -515,60 +321,15 @@ Run frontend:
 npm run dev
 ```
 
-**Access at:** http://localhost:5173  
-**API Docs at:** http://localhost:8000/docs
-
 ---
 
-## 🔐 Environment Variables Reference
+## ☁️ Production Deployment Architecture
 
-### Backend
+The application is deployed via continuous integration to **Vercel** (Frontend) and **Render** (Backend), with data securely stored on **Supabase** (PostgreSQL).
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GROQ_API_KEY` | **Yes** | Groq API key for LLM access |
-| `JWT_SECRET` | **Yes** | Secret for signing JWT tokens |
-| `DATABASE_URL` | No | DB connection (defaults to SQLite) |
-| `CORS_ORIGINS` | No | Comma-separated allowed origins |
-| `LLM_MODEL` | No | Groq model name |
-| `EMBEDDING_MODEL` | No | HuggingFace embedding model |
-
-### Frontend
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `VITE_API_URL` | **Yes** | Backend API server URL |
-
----
-
-## ☁️ Production Deployment Guide
-
-### Backend → Render
-
-1. Push code to GitHub
-2. Render.com → **New** → **Blueprint** → Connect repo
-3. Render detects `render.yaml` automatically
-4. Add secret env vars in Render dashboard: `GROQ_API_KEY`, `DATABASE_URL` (Supabase PostgreSQL URL), `JWT_SECRET`
-5. Deploy! Backend live at `https://cortex-ai-backend.onrender.com`
-
-### Frontend → Vercel
-
-1. Vercel.com → **Add New Project** → Import GitHub repo
-2. Set **Root Directory** to `frontend`
-3. Add env var: `VITE_API_URL` = your Render backend URL
-4. Deploy! Frontend live at `https://cortex-ai-frontend.vercel.app`
-
-### Final Step: Update CORS
-
-In Render dashboard, update `CORS_ORIGINS` to your actual Vercel URL.
-
-### Auto CI/CD
-
-After setup, every `git push origin main` automatically:
-- Triggers Vercel to rebuild & redeploy frontend
-- Triggers Render to rebuild & redeploy backend
-
-No additional GitHub Actions configuration needed.
+- **Frontend (Vercel):** Connected directly to the main branch. Any push triggers a new production build of the Vite React application. Environment variables (`VITE_API_URL`) handle routing to the backend.
+- **Backend (Render):** Connected to the main branch. Any push triggers a Docker/Python build pipeline. Uvicorn serves the FastAPI endpoints, which connect to Supabase.
+- **Database (Supabase):** Securely hosted PostgreSQL instance containing users, orders, and products.
 
 ---
 
@@ -578,18 +339,16 @@ No additional GitHub Actions configuration needed.
 |---------|---------------|
 | **Password Storage** | bcrypt hashing (passlib) — never stored plain |
 | **Authentication** | JWT (HS256), 60-minute expiry |
-| **API Security** | Strict CORS whitelist in production |
+| **API Security** | Strict CORS whitelist in production connecting Vercel and Render |
 | **Input Validation** | Pydantic schemas validate all inputs |
 | **SQL Injection** | SQLAlchemy ORM parameterized queries |
 | **NL2SQL Safety** | SELECT-only validation before execution |
-| **Secret Management** | All secrets in env vars, never in source code |
+| **Secret Management** | All API keys and DB URLs in secure environment variables |
 
 ---
 
 <div align="center">
 
-
 **[Report Bug](https://github.com/sourav23143/Aura/issues)** • **[Request Feature](https://github.com/sourav23143/Aura/issues)**
 
 </div>
-
