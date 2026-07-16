@@ -22,7 +22,6 @@ langgraph>=0.2.60
 
 # Vector DB & Embeddings
 chromadb>=0.5.23
-sentence-transformers>=3.3.1
 
 # Streaming
 sse-starlette>=2.2.1
