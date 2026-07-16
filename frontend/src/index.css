@@ -15,8 +15,8 @@
   --bg-secondary: #f9f9f9;
   
   /* Brand Accents - Clean Solid Colors */
-  --primary: #000000; 
-  --primary-hover: #333333;
+  --primary: #4f46e5; /* Premium SaaS Indigo */
+  --primary-hover: #4338ca;
   --success: #00a843; 
   --warning: #f59e0b;
   --danger: #ef4444;
@@ -28,7 +28,7 @@
 
   /* Borders - Hairline */
   --border-subtle: #eaeaea; 
-  --border-focus: #000000; 
+  --border-focus: #4f46e5; 
 
   /* Spacing */
   --space-xs: 0.25rem;
@@ -211,7 +211,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .card:hover {
   box-shadow: var(--shadow-md);
-  border-color: #000000;
+  border-color: var(--primary);
 }
 
 /* ─── Buttons ─────────────────────────────────── */
@@ -248,7 +248,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-secondary:hover:not(:disabled) {
   background: var(--bg-secondary);
-  border-color: #000000;
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 /* ─── Input / Search ──────────────────────────── */
